@@ -237,13 +237,40 @@ pub fn selection_translate() {
 
 pub fn input_translate() {
     let app_handle = APP.get().unwrap();
-    // Clear State
+    // 检查窗口是否已经存在
+    let window_option = app_handle.get_window("translate");
+
+    // 首先设置状态
     let state: tauri::State<StringWrapper> = app_handle.state();
     state
         .0
         .lock()
         .unwrap()
         .replace_range(.., "[INPUT_TRANSLATE]");
+
+    // 如果窗口已存在，直接使用它，避免重复创建
+    if let Some(window) = window_option {
+        info!("快速显示已存在的翻译窗口");
+        // 确保窗口可见
+        window.show().unwrap();
+        window.set_focus().unwrap();
+
+        // 获取窗口位置配置
+        let position_type = match get("translate_window_position") {
+            Some(v) => v.as_str().unwrap().to_string(),
+            None => "mouse".to_string(),
+        };
+        if position_type == "mouse" {
+            window.center().unwrap();
+        }
+
+        // 发送消息到前端
+        window.emit("new_text", "[INPUT_TRANSLATE]").unwrap();
+        return;
+    }
+
+    // 如果窗口不存在，创建新窗口
+    info!("创建新的翻译窗口");
     let window = translate_window();
     let position_type = match get("translate_window_position") {
         Some(v) => v.as_str().unwrap().to_string(),

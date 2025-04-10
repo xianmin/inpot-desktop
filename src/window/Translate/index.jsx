@@ -28,11 +28,12 @@ const listenBlur = () => {
                 clearTimeout(blurTimeout);
             }
             info('Blur');
-            // 100ms后关闭窗口，因为在 windows 下拖动窗口时会先切换成 blur 再立即切换成 focus
-            // 如果直接关闭将导致窗口无法拖动
+            // 100ms后隐藏窗口，而不是关闭它
+            // 因为在 windows 下拖动窗口时会先切换成 blur 再立即切换成 focus
             blurTimeout = setTimeout(async () => {
-                info('Confirm Blur');
-                await appWindow.close();
+                info('Hiding window instead of closing');
+                // 仅隐藏窗口，不关闭
+                await appWindow.hide();
             }, 100);
         }
     });
@@ -268,7 +269,8 @@ export default function Translate() {
                         disableAnimation
                         className={`my-auto ${osType === 'Darwin' && 'hidden'} bg-transparent`}
                         onPress={() => {
-                            void appWindow.close();
+                            // 点击关闭按钮时只隐藏窗口，不真正关闭
+                            void appWindow.hide();
                         }}
                     >
                         <AiFillCloseCircle className='text-[20px] text-default-400' />

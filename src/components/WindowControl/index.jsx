@@ -48,7 +48,7 @@ export default function WindowControl() {
                 isIconOnly
                 variant='light'
                 className={`w-[35px] h-[35px] rounded-none close-button ${osType === 'Linux' && 'rounded-tr-[10px]'}`}
-                onPress={() => appWindow.close()}
+                onPress={() => appWindow.hide()}
             >
                 <VscChromeClose className='text-[16px]' />
             </Button>

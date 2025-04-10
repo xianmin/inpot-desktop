@@ -173,7 +173,7 @@ export default function SourceArea(props) {
             });
         }
         if (event.key === 'Escape') {
-            appWindow.close();
+            appWindow.hide();
         }
     };
 
@@ -272,14 +272,17 @@ export default function SourceArea(props) {
                 });
             }, 1000);
         }
-    }
+    };
 
     const transformVarName = function (str) {
         let str2 = str;
 
         // snake_case to SNAKE_CASE
         if (/_[a-z]/.test(str2)) {
-            str2 = str2.split('_').map(it => it.toLocaleUpperCase()).join('_');
+            str2 = str2
+                .split('_')
+                .map((it) => it.toLocaleUpperCase())
+                .join('_');
         }
         if (str2 !== str) {
             return str2;
@@ -287,7 +290,10 @@ export default function SourceArea(props) {
 
         // SNAKE_CASE to kebab-case
         if (/^[A-Z]+(_[A-Z]+)*$/.test(str2)) {
-            str2 = str2.split('_').map(it => it.toLocaleLowerCase()).join('-');
+            str2 = str2
+                .split('_')
+                .map((it) => it.toLocaleLowerCase())
+                .join('-');
         }
         if (str2 !== str) {
             return str2;
@@ -295,7 +301,10 @@ export default function SourceArea(props) {
 
         // kebab-case to dot.notation
         if (/-/.test(str2)) {
-            str2 = str2.split('-').map(it => it.toLocaleLowerCase()).join('.');
+            str2 = str2
+                .split('-')
+                .map((it) => it.toLocaleLowerCase())
+                .join('.');
         }
         if (str2 !== str) {
             return str2;
@@ -343,9 +352,9 @@ export default function SourceArea(props) {
         }
 
         return str2;
-    }
+    };
     useEffect(() => {
-        textAreaRef.current.addEventListener("keydown", async (event) => {
+        textAreaRef.current.addEventListener('keydown', async (event) => {
             if (event.altKey && event.shiftKey && event.code === 'KeyU') {
                 const originText = textAreaRef.current.value;
                 const selectionStart = textAreaRef.current.selectionStart;
@@ -353,7 +362,8 @@ export default function SourceArea(props) {
                 const selectionText = originText.substring(selectionStart, selectionEnd);
 
                 const convertedText = transformVarName(selectionText);
-                const targetText = originText.substring(0, selectionStart) + convertedText + originText.substring(selectionEnd);
+                const targetText =
+                    originText.substring(0, selectionStart) + convertedText + originText.substring(selectionEnd);
 
                 await changeSourceText(targetText);
                 textAreaRef.current.selectionStart = selectionStart;
@@ -361,7 +371,6 @@ export default function SourceArea(props) {
             }
         });
     }, [textAreaRef]);
-
 
     return (
         <div className={hideSource && windowType !== '[INPUT_TRANSLATE]' && 'hidden'}>
