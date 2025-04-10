@@ -30,6 +30,7 @@ import { useAtomValue } from 'jotai';
 import { nanoid } from 'nanoid';
 import { useSpring, animated } from '@react-spring/web';
 import useMeasure from 'react-use-measure';
+import { listen } from '@tauri-apps/api/event';
 
 import * as builtinCollectionServices from '../../../../services/collection';
 import { sourceLanguageAtom, targetLanguageAtom } from '../LanguageArea';
@@ -91,6 +92,20 @@ export default function TargetArea(props) {
             logError(`[${currentTranslateServiceInstanceKey}]happened error: ` + error);
         }
     }, [error]);
+
+    // 全局监听窗口隐藏事件，重置翻译结果
+    useEffect(() => {
+        const unlistenHide = listen('tauri://window-hidden', async () => {
+            setResult('');
+            setError('');
+            setIsLoading(false);
+            setHide(true);
+        });
+
+        return () => {
+            unlistenHide.then((f) => f());
+        };
+    }, []);
 
     // listen to translation
     useEffect(() => {
