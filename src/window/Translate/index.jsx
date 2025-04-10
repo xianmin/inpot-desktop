@@ -6,7 +6,7 @@ import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { Spacer, Button } from '@nextui-org/react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useState, useEffect } from 'react';
-import { listen } from '@tauri-apps/api/event';
+import { listen, emit } from '@tauri-apps/api/event';
 import { BsPinFill } from 'react-icons/bs';
 
 import LanguageArea from './components/LanguageArea';
@@ -34,6 +34,8 @@ const listenBlur = () => {
                 info('Hiding window instead of closing');
                 // 仅隐藏窗口，不关闭
                 await appWindow.hide();
+                // 触发window-hidden事件，让SourceArea组件知道窗口被隐藏了
+                await emit('tauri://window-hidden', {});
             }, 100);
         }
     });
@@ -271,6 +273,8 @@ export default function Translate() {
                         onPress={() => {
                             // 点击关闭按钮时只隐藏窗口，不真正关闭
                             void appWindow.hide();
+                            // 触发window-hidden事件，让SourceArea组件知道窗口被隐藏了
+                            void emit('tauri://window-hidden', {});
                         }}
                     >
                         <AiFillCloseCircle className='text-[20px] text-default-400' />
