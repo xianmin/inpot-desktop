@@ -247,8 +247,8 @@ fn translate_window() -> Window {
     let (width, height) = get_window_size(
         "translate_window_width",
         "translate_window_height",
-        350,
-        420
+        450,
+        300
     );
 
     // 设置窗口尺寸
@@ -261,6 +261,12 @@ fn translate_window() -> Window {
             (height as f64) * dpi,
         ))
         .unwrap();
+
+    // 设置最小窗口尺寸
+    window.set_min_size(Some(tauri::PhysicalSize::new(
+        450.0 * dpi,
+        300.0 * dpi,
+    ))).unwrap();
 
     // 根据配置设置窗口位置
     let position_type = match get("translate_window_position") {

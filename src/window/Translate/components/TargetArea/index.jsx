@@ -82,7 +82,7 @@ export default function TargetArea(props) {
     const [boundRef, bounds] = useMeasure({ scroll: true });
     const springs = useSpring({
         from: { height: 0 },
-        to: { height: hide ? 0 : bounds.height },
+        to: { height: hide ? 0 : bounds.height > 0 ? bounds.height : 'calc(100vh-150px)' },
     });
 
     // 记录错误日志
@@ -403,7 +403,7 @@ export default function TargetArea(props) {
     return (
         <Card
             shadow='none'
-            className='rounded-[10px]'
+            className='rounded-[10px] h-full'
         >
             <Toaster />
             <CardHeader
@@ -454,7 +454,7 @@ export default function TargetArea(props) {
             <animated.div style={{ ...springs }}>
                 <div ref={boundRef}>
                     {/* 翻译结果 */}
-                    <CardBody className={`p-[12px] pb-0 ${hide && 'h-0 p-0'}`}>
+                    <CardBody className={`p-[12px] pb-0 overflow-y-auto thin-scrollbar ${hide && 'h-0 p-0'}`}>
                         <TranslateResult
                             ref={textAreaRef}
                             result={result}

@@ -415,14 +415,19 @@ export default function SourceArea(props) {
         <div className={hideSource && windowType !== '[INPUT_TRANSLATE]' && 'hidden'}>
             <Card
                 shadow='none'
-                className='bg-content1 rounded-[10px] mt-[1px] pb-0'
+                className='bg-content1 rounded-[10px] mt-[1px] pb-0 h-full'
             >
                 <Toaster />
-                <CardBody className='bg-content1 p-[12px] pb-0 max-h-[40vh] overflow-y-auto'>
+                <CardBody
+                    className='bg-content1 p-[12px] h-[calc(100vh-85px)] pb-0 overflow-y-auto cursor-text thin-scrollbar'
+                    onClick={() => {
+                        textAreaRef.current.focus();
+                    }}
+                >
                     <textarea
                         autoFocus
                         ref={textAreaRef}
-                        className={`text-[${appFontSize}px] bg-content1 h-full resize-none outline-none`}
+                        className={`text-[${appFontSize}px] bg-content1 h-full w-full resize-none outline-none cursor-text`}
                         value={sourceText}
                         onKeyDown={keyDown}
                         onChange={(e) => {
@@ -520,7 +525,6 @@ export default function SourceArea(props) {
                     </Tooltip>
                 </CardFooter>
             </Card>
-            <Spacer y={2} />
         </div>
     );
 }

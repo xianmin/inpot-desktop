@@ -25,3 +25,22 @@ html {
 *::-webkit-scrollbar-thumb:hover {
     background: #c0c1c550;
 }
+
+.thin-scrollbar::-webkit-scrollbar {
+    width: 3px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background: #c0c1c530;
+    border-radius: 3px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #c0c1c570;
+}
+
+/* 使滚动条不占用内容宽度 */
+.thin-scrollbar {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+}
