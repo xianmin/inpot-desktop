@@ -380,15 +380,6 @@ pub fn input_translate() {
         window.show().unwrap();
         window.set_focus().unwrap();
 
-        // 获取窗口位置配置
-        let position_type = match get("translate_window_position") {
-            Some(v) => v.as_str().unwrap().to_string(),
-            None => "mouse".to_string(),
-        };
-        if position_type == "mouse" {
-            window.center().unwrap();
-        }
-
         // 发送消息到前端，使用特殊标记
         window.emit("new_text", "[INPUT_TRANSLATE_FROM_TRAY]").unwrap();
         return;
