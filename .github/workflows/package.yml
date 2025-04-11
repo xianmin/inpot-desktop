@@ -110,7 +110,7 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 9
+                  version: 10.4.0
             - name: Install Dependencies
               run: pnpm install
             - name: Code Format
@@ -194,7 +194,7 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 9
+                  version: 10.4.0
             - name: Install Dependencies
               run: pnpm install
             - name: Code Format
@@ -256,7 +256,7 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 9
+                  version: 10.4.0
             - name: Install Dependencies
               run: pnpm install
             - name: Code Format
@@ -401,7 +401,7 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 9
+                  version: 10.4.0
             - name: pnpm install
               run: pnpm install
             - name: Release updater file
