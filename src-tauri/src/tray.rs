@@ -193,12 +193,44 @@ fn on_view_log_click(app: &AppHandle) {
 }
 fn on_restart_click(app: &AppHandle) {
     info!("============== Restart App ==============");
-    app.restart();
+
+    // 先注销所有全局快捷键
+    app.global_shortcut_manager().unregister_all().unwrap();
+
+    // 关闭所有窗口
+    let windows = app.windows();
+    for (_, window) in windows {
+        if let Err(e) = window.close() {
+            info!("关闭窗口错误: {:?}", e);
+        }
+    }
+
+    // 短暂延迟后重启
+    let app_handle = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        app_handle.restart();
+    });
 }
 fn on_quit_click(app: &AppHandle) {
+    // 先注销所有全局快捷键
     app.global_shortcut_manager().unregister_all().unwrap();
+
+    // 关闭所有窗口
+    let windows = app.windows();
+    for (_, window) in windows {
+        if let Err(e) = window.close() {
+            info!("关闭窗口错误: {:?}", e);
+        }
+    }
+
     info!("============== Quit App ==============");
-    app.exit(0);
+    // 短暂延迟后退出，确保窗口有时间关闭
+    let app_handle = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        app_handle.exit(0);
+    });
 }
 
 fn tray_menu_en() -> tauri::SystemTrayMenu {
