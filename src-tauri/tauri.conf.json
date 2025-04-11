@@ -105,10 +105,9 @@
             "active": true,
             "dialog": false,
             "endpoints": [
-                "https://dl.pot-app.com/https://github.com/pot-app/inpot-desktop/releases/download/updater/update.json",
-                "https://github.com/pot-app/inpot-desktop/releases/download/updater/update.json"
+                "https://github.com/xianmin/inpot-desktop/releases/download/updater/update.json"
             ],
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVBRTQxQTNDQjM5QzQzM0EKUldRNlE1eXpQQnJrV21mM1Bram5LRlF6UDA3K0Jab2FYL2lZSWhXTE5McWs2NUdJS0dtYkd5VGMK"
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVGNUJERUZCQzAwMDlCOEEKUldTS213REErOTViNzc2Y0JKa2xBckhkTzZIKzlSNmVSTVMrWmRKa0xUZ3VVS1d3WDBxZUc1RDMK"
         }
     }
 }

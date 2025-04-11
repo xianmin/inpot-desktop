@@ -2,9 +2,9 @@
 name = "inPot"
 version = "0.0.0"
 description = "inPot App"
-authors = ["pot-app"]
+authors = ["pot-app", "xianmin"]
 license = "GPL-3.0-only"
-repository = "https://github.com/pot-app/inpot-desktop"
+repository = "https://github.com/xianmin/inpot-desktop"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

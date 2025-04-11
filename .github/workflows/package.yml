@@ -376,7 +376,7 @@ jobs:
         steps:
             - name: Trigger update
               run: |
-                  curl -X POST https://api.github.com/repos/pot-app/pot-docs/dispatches \
+                  curl -X POST https://api.github.com/repos/xianmin/inpot-desktop/dispatches \
                     -H "Accept: application/vnd.github.everest-preview+json" \
                     -H "Authorization: token ${{ secrets.TOKEN }}" \
                     -d '{"event_type": "plugins-updated"}'
@@ -471,9 +471,9 @@ jobs:
               if: startsWith(github.ref, 'refs/tags')
               uses: vedantmgoyal2009/winget-releaser@v2
               with:
-                  identifier: Pylogmon.pot
+                  identifier: xianmin.inpot
                   version: ${{env.VERSION}}
                   installers-regex: '\.exe$'
                   token: ${{ secrets.TOKEN }}
-                  fork-user: Pylogmon
+                  fork-user: xianmin
               continue-on-error: true
