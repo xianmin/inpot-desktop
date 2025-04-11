@@ -125,13 +125,13 @@ jobs:
             - name: Change File Name
               if: matrix.target == 'aarch64-apple-darwin'
               run: |
-                  sudo mv src-tauri/target/aarch64-apple-darwin/release/bundle/macos/pot.app.tar.gz src-tauri/target/aarch64-apple-darwin/release/bundle/macos/pot_${{needs.change-version.outputs.version}}_aarch64.app.tar.gz
-                  sudo mv src-tauri/target/aarch64-apple-darwin/release/bundle/macos/pot.app.tar.gz.sig src-tauri/target/aarch64-apple-darwin/release/bundle/macos/pot_${{needs.change-version.outputs.version}}_aarch64.app.tar.gz.sig
+                  sudo mv src-tauri/target/aarch64-apple-darwin/release/bundle/macos/inPot.app.tar.gz src-tauri/target/aarch64-apple-darwin/release/bundle/macos/inPot_${{needs.change-version.outputs.version}}_aarch64.app.tar.gz
+                  sudo mv src-tauri/target/aarch64-apple-darwin/release/bundle/macos/inPot.app.tar.gz.sig src-tauri/target/aarch64-apple-darwin/release/bundle/macos/inPot_${{needs.change-version.outputs.version}}_aarch64.app.tar.gz.sig
             - name: Change File Name
               if: matrix.target == 'x86_64-apple-darwin'
               run: |
-                  sudo mv src-tauri/target/x86_64-apple-darwin/release/bundle/macos/pot.app.tar.gz src-tauri/target/x86_64-apple-darwin/release/bundle/macos/pot_${{needs.change-version.outputs.version}}_x64.app.tar.gz
-                  sudo mv src-tauri/target/x86_64-apple-darwin/release/bundle/macos/pot.app.tar.gz.sig src-tauri/target/x86_64-apple-darwin/release/bundle/macos/pot_${{needs.change-version.outputs.version}}_x64.app.tar.gz.sig
+                  sudo mv src-tauri/target/x86_64-apple-darwin/release/bundle/macos/inPot.app.tar.gz src-tauri/target/x86_64-apple-darwin/release/bundle/macos/inPot_${{needs.change-version.outputs.version}}_x64.app.tar.gz
+                  sudo mv src-tauri/target/x86_64-apple-darwin/release/bundle/macos/inPot.app.tar.gz.sig src-tauri/target/x86_64-apple-darwin/release/bundle/macos/inPot_${{needs.change-version.outputs.version}}_x64.app.tar.gz.sig
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -272,9 +272,9 @@ jobs:
                   $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
                   $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
                   pnpm tauri build -b nsis,updater --target ${{ matrix.target }}
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.exe pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.exe
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip.sig pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip.sig
+                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.exe inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.exe
+                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip
+                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip.sig inPot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip.sig
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -420,60 +420,60 @@ jobs:
                       update.json
                       update-fix-runtime.json
 
-    homebrew:
-        name: Update Homebrew cask
-        needs: build-for-macos
-        runs-on: macos-latest
-        if: startsWith(github.ref, 'refs/tags')
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Get Tag Name
-              run: |
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
-            - name: Set up Homebrew
-              uses: Homebrew/actions/setup-homebrew@master
-            - name: Set up Git
-              run: |
-                  # sudo apt-get install git -y
-                  git config --global user.email support@pot-app.com
-                  git config --global user.name pot-app
-            - name: Update Homebrew cask
-              env:
-                  HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.TOKEN }}
-              run: |
-                  brew tap pot-app/homebrew-tap
-                  brew update
-                  brew bump-cask-pr pot --version ${{ env.VERSION }} --no-browse
+    # homebrew:
+    #     name: Update Homebrew cask
+    #     needs: build-for-macos
+    #     runs-on: macos-latest
+    #     if: startsWith(github.ref, 'refs/tags')
+    #     steps:
+    #         - name: Checkout repository
+    #           uses: actions/checkout@v4
+    #           with:
+    #               fetch-depth: 0
+    #         - name: Get Tag Name
+    #           run: |
+    #               echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
+    #               echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
+    #         - name: Set up Homebrew
+    #           uses: Homebrew/actions/setup-homebrew@master
+    #         - name: Set up Git
+    #           run: |
+    #               # sudo apt-get install git -y
+    #               git config --global user.email support@pot-app.com
+    #               git config --global user.name pot-app
+    #         - name: Update Homebrew cask
+    #           env:
+    #               HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.TOKEN }}
+    #           run: |
+    #               brew tap pot-app/homebrew-tap
+    #               brew update
+    #               brew bump-cask-pr pot --version ${{ env.VERSION }} --no-browse
 
-    winget:
-        name: Update WinGet Package
-        needs: build-for-windows
-        runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags')
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Install git
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y git
-            - name: Get Tag Name
-              run: |
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
-            - name: Upload WinGet
-              if: startsWith(github.ref, 'refs/tags')
-              uses: vedantmgoyal2009/winget-releaser@v2
-              with:
-                  identifier: xianmin.inpot
-                  version: ${{env.VERSION}}
-                  installers-regex: '\.exe$'
-                  token: ${{ secrets.TOKEN }}
-                  fork-user: xianmin
-              continue-on-error: true
+    # winget:
+    #     name: Update WinGet Package
+    #     needs: build-for-windows
+    #     runs-on: ubuntu-latest
+    #     if: startsWith(github.ref, 'refs/tags')
+    #     steps:
+    #         - name: Checkout repository
+    #           uses: actions/checkout@v4
+    #           with:
+    #               fetch-depth: 0
+    #         - name: Install git
+    #           run: |
+    #               sudo apt-get update
+    #               sudo apt-get install -y git
+    #         - name: Get Tag Name
+    #           run: |
+    #               echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
+    #               echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
+    #         - name: Upload WinGet
+    #           if: startsWith(github.ref, 'refs/tags')
+    #           uses: vedantmgoyal2009/winget-releaser@v2
+    #           with:
+    #               identifier: xianmin.inpot
+    #               version: ${{env.VERSION}}
+    #               installers-regex: '\.exe$'
+    #               token: ${{ secrets.TOKEN }}
+    #               fork-user: xianmin
+    #           continue-on-error: true
