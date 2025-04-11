@@ -2842,6 +2842,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0263a3d970d5c054ed9312c0057b4f3bde9c0b33836d3637361d4a9e6e7a408"
 
 [[package]]
+name = "inPot"
+version = "0.0.0"
+dependencies = [
+ "arboard",
+ "base64 0.22.1",
+ "dirs 5.0.1",
+ "font-kit",
+ "image 0.25.4",
+ "lingua",
+ "log",
+ "macos-accessibility-client",
+ "mouse_position",
+ "once_cell",
+ "reqwest 0.12.9",
+ "reqwest_dav",
+ "screenshots",
+ "selection",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-fs-watch",
+ "tauri-plugin-log",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-sql",
+ "tauri-plugin-store",
+ "thiserror",
+ "tiny_http",
+ "walkdir",
+ "window-shadows",
+ "windows 0.58.0",
+ "zip 2.2.0",
+]
+
+[[package]]
 name = "include_dir"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4649,42 +4685,6 @@ dependencies = [
  "rustix 0.38.38",
  "tracing",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "pot"
-version = "0.0.0"
-dependencies = [
- "arboard",
- "base64 0.22.1",
- "dirs 5.0.1",
- "font-kit",
- "image 0.25.4",
- "lingua",
- "log",
- "macos-accessibility-client",
- "mouse_position",
- "once_cell",
- "reqwest 0.12.9",
- "reqwest_dav",
- "screenshots",
- "selection",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-fs-watch",
- "tauri-plugin-log",
- "tauri-plugin-single-instance",
- "tauri-plugin-sql",
- "tauri-plugin-store",
- "thiserror",
- "tiny_http",
- "walkdir",
- "window-shadows",
- "windows 0.58.0",
- "zip 2.2.0",
 ]
 
 [[package]]
