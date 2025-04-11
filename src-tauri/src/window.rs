@@ -236,6 +236,11 @@ fn translate_window() -> Window {
     // 获取或创建翻译窗口
     let mut mouse_position = get_mouse_position();
     let (window, exists) = build_window("translate", "翻译");
+
+    // 确保窗口可见并获得焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
+
     if exists {
         return window;
     }
@@ -443,6 +448,11 @@ pub fn image_translate() {
 /// 用于打开OCR识别窗口，显示图片识别的结果
 pub fn recognize_window() {
     let (window, exists) = build_window("recognize", "文字识别");
+
+    // 确保窗口可见并获得焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
+
     if exists {
         window.emit("new_image", "").unwrap();
         return;
@@ -474,21 +484,28 @@ pub fn recognize_window() {
 ///
 /// 返回配置好的截图窗口实例
 fn screenshot_window() -> Window {
-    let (window, _exists) = build_window("screenshot", "截图");
+    let (window, exists) = build_window("screenshot", "截图");
+
+    // 确保窗口可见并获得焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
 
     window.set_skip_taskbar(true).unwrap();
 
-    // 针对不同操作系统的截图窗口配置
-    #[cfg(target_os = "macos")]
-    {
-        let monitor = window.current_monitor().unwrap().unwrap();
-        let size = monitor.size();
-        window.set_decorations(false).unwrap();
-        window.set_size(*size).unwrap();
-    }
+    // 截图窗口需要在新创建时设置全屏和其他属性
+    if !exists {
+        // 针对不同操作系统的截图窗口配置
+        #[cfg(target_os = "macos")]
+        {
+            let monitor = window.current_monitor().unwrap().unwrap();
+            let size = monitor.size();
+            window.set_decorations(false).unwrap();
+            window.set_size(*size).unwrap();
+        }
 
-    #[cfg(not(target_os = "macos"))]
-    window.set_fullscreen(true).unwrap();
+        #[cfg(not(target_os = "macos"))]
+        window.set_fullscreen(true).unwrap();
+    }
 
     // 截图窗口需要置顶显示
     window.set_always_on_top(true).unwrap();
@@ -527,12 +544,20 @@ pub fn ocr_translate() {
 ///
 /// 打开应用的配置窗口，让用户修改应用设置
 pub fn config_window() {
-    let (window, _exists) = build_window("config", "配置");
-    window
-        .set_min_size(Some(tauri::LogicalSize::new(800, 400)))
-        .unwrap();
-    window.set_size(tauri::LogicalSize::new(800, 600)).unwrap();
-    window.center().unwrap();
+    let (window, exists) = build_window("config", "配置");
+
+    // 无论窗口是否存在，都确保其可见并设置焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
+
+    // 仅在创建新窗口时设置尺寸和居中位置
+    if !exists {
+        window
+            .set_min_size(Some(tauri::LogicalSize::new(800, 400)))
+            .unwrap();
+        window.set_size(tauri::LogicalSize::new(800, 600)).unwrap();
+        window.center().unwrap();
+    }
 }
 
 /// 创建并配置更新窗口
@@ -540,10 +565,18 @@ pub fn config_window() {
 /// 打开应用的更新窗口，显示更新进度和信息
 #[tauri::command(async)]
 pub fn updater_window() {
-    let (window, _exists) = build_window("updater", "更新");
-    window
-        .set_min_size(Some(tauri::LogicalSize::new(600, 400)))
-        .unwrap();
-    window.set_size(tauri::LogicalSize::new(600, 400)).unwrap();
-    window.center().unwrap();
+    let (window, exists) = build_window("updater", "更新");
+
+    // 确保窗口可见并获得焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
+
+    // 仅在创建新窗口时设置尺寸和居中位置
+    if !exists {
+        window
+            .set_min_size(Some(tauri::LogicalSize::new(600, 400)))
+            .unwrap();
+        window.set_size(tauri::LogicalSize::new(600, 400)).unwrap();
+        window.center().unwrap();
+    }
 }
