@@ -1,36 +1,35 @@
-import { Button, Card, CardBody, CardFooter, ButtonGroup, Chip, Tooltip, Spacer } from '@nextui-org/react';
-import { BaseDirectory, readTextFile } from '@tauri-apps/api/fs';
-import React, { useEffect, useRef, useState } from 'react';
-import { writeText } from '@tauri-apps/api/clipboard';
-import { HiOutlineVolumeUp } from 'react-icons/hi';
+import { Card, CardBody, CardFooter } from '@nextui-org/react';
+import React, { useEffect, useState } from 'react';
 import { appWindow } from '@tauri-apps/api/window';
 import toast, { Toaster } from 'react-hot-toast';
 import { listen } from '@tauri-apps/api/event';
-import { MdContentCopy } from 'react-icons/md';
-import { MdSmartButton } from 'react-icons/md';
-import { useTranslation } from 'react-i18next';
-import { HiTranslate } from 'react-icons/hi';
-import { LuDelete } from 'react-icons/lu';
 import { invoke } from '@tauri-apps/api';
 import { atom, useAtom } from 'jotai';
-import { getServiceName, getServiceSouceType, ServiceSourceType } from '../../../../utils/service_instance';
 import { useConfig, useSyncAtom, useVoice, useToastStyle } from '../../../../hooks';
-import { invoke_plugin } from '../../../../utils/invoke_plugin';
-import * as recognizeServices from '../../../../services/recognize';
-import * as builtinTtsServices from '../../../../services/tts';
-import detect from '../../../../utils/lang_detect';
-import { store } from '../../../../utils/store';
-import { info } from 'tauri-plugin-log-api';
-import { debug } from 'tauri-plugin-log-api';
 
+// 导入拆分出的组件和功能
+import TextEditor from './components/TextEditor';
+import Toolbar from './components/Toolbar';
+import { detectLanguage, cleanText, updateSourceText } from './handleTextOperations';
+import useTTS from './useTTS';
+import useImageRecognizer from './useImageRecognizer';
+
+// 创建原子状态
 export const sourceTextAtom = atom('');
 export const detectLanguageAtom = atom('');
 
+// 全局变量
 let unlisten = null;
-let timer = null;
 
+/**
+ * 源文本区域组件
+ * 用于显示和处理待翻译的文本
+ */
 export default function SourceArea(props) {
+    // 获取props
     const { pluginList, serviceInstanceConfigMap } = props;
+
+    // 获取配置项
     const [appFontSize] = useConfig('app_font_size', 16);
     const [sourceText, setSourceText, syncSourceText] = useSyncAtom(sourceTextAtom);
     const [detectLanguage, setDetectLanguage] = useAtom(detectLanguageAtom);
@@ -42,13 +41,38 @@ export default function SourceArea(props) {
     const [ttsServiceList] = useConfig('tts_service_list', ['lingva_tts']);
     const [hideWindow] = useConfig('translate_hide_window', false);
     const [hideSource] = useConfig('hide_source', false);
-    const [ttsPluginInfo, setTtsPluginInfo] = useState();
+
+    // 窗口和UI状态
     const [windowType, setWindowType] = useState('[SELECTION_TRANSLATE]');
     const toastStyle = useToastStyle();
-    const { t } = useTranslation();
-    const textAreaRef = useRef();
     const speak = useVoice();
 
+    // 获取TTS处理函数
+    const { handleSpeak } = useTTS(ttsServiceList, serviceInstanceConfigMap, speak);
+
+    // 获取图像识别处理函数
+    const recognizeTextFromImage = useImageRecognizer(
+        recognizeLanguage,
+        recognizeServiceList,
+        pluginList,
+        serviceInstanceConfigMap,
+        deleteNewline
+    );
+
+    // 获取文本更新处理函数
+    const { changeSourceText } = updateSourceText(
+        sourceText,
+        setDetectLanguage,
+        setSourceText,
+        syncSourceText,
+        dynamicTranslate
+    );
+
+    /**
+     * 处理新文本函数
+     * 根据不同的文本类型执行不同的操作
+     * @param {string} text - 接收到的文本
+     */
     const handleNewText = async (text) => {
         text = text.trim();
         if (hideWindow) {
@@ -57,160 +81,76 @@ export default function SourceArea(props) {
             appWindow.show();
             appWindow.setFocus();
         }
+
         // 清空检测语言
         setDetectLanguage('');
+
         if (text === '[INPUT_TRANSLATE]') {
+            // 处理输入翻译模式
             setWindowType('[INPUT_TRANSLATE]');
             appWindow.show();
             appWindow.setFocus();
             setSourceText('', true);
         } else if (text === '[IMAGE_TRANSLATE]') {
+            // 处理图像翻译模式
             setWindowType('[IMAGE_TRANSLATE]');
-            const base64 = await invoke('get_base64');
-            const serviceInstanceKey = recognizeServiceList[0];
-            if (getServiceSouceType(serviceInstanceKey) === ServiceSourceType.PLUGIN) {
-                if (recognizeLanguage in pluginList['recognize'][getServiceName(serviceInstanceKey)].language) {
-                    const pluginConfig = serviceInstanceConfigMap[serviceInstanceKey];
 
-                    let [func, utils] = await invoke_plugin('recognize', getServiceName(serviceInstanceKey));
-                    func(
-                        base64,
-                        pluginList['recognize'][getServiceName(serviceInstanceKey)].language[recognizeLanguage],
-                        {
-                            config: pluginConfig,
-                            utils,
-                        }
-                    ).then(
-                        (v) => {
-                            let newText = v.trim();
-                            if (deleteNewline) {
-                                newText = v.replace(/\-\s+/g, '').replace(/\s+/g, ' ');
-                            } else {
-                                newText = v.trim();
-                            }
-                            if (incrementalTranslate) {
-                                setSourceText((old) => {
-                                    return old + ' ' + newText;
-                                });
-                            } else {
-                                setSourceText(newText);
-                            }
-                            detect_language(newText).then(() => {
-                                syncSourceText();
-                            });
-                        },
-                        (e) => {
-                            setSourceText(e.toString());
-                        }
-                    );
+            try {
+                // 使用图像识别器获取文本
+                const newText = await recognizeTextFromImage();
+
+                // 根据增量翻译配置更新源文本
+                if (incrementalTranslate && sourceText) {
+                    setSourceText((old) => old + ' ' + newText);
                 } else {
-                    setSourceText('Language not supported');
+                    setSourceText(newText);
                 }
-            } else {
-                if (recognizeLanguage in recognizeServices[getServiceName(serviceInstanceKey)].Language) {
-                    const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
-                    recognizeServices[getServiceName(serviceInstanceKey)]
-                        .recognize(
-                            base64,
-                            recognizeServices[getServiceName(serviceInstanceKey)].Language[recognizeLanguage],
-                            {
-                                config: instanceConfig,
-                            }
-                        )
-                        .then(
-                            (v) => {
-                                let newText = v.trim();
-                                if (deleteNewline) {
-                                    newText = v.replace(/\-\s+/g, '').replace(/\s+/g, ' ');
-                                } else {
-                                    newText = v.trim();
-                                }
-                                if (incrementalTranslate) {
-                                    setSourceText((old) => {
-                                        return old + ' ' + newText;
-                                    });
-                                } else {
-                                    setSourceText(newText);
-                                }
-                                detect_language(newText).then(() => {
-                                    syncSourceText();
-                                });
-                            },
-                            (e) => {
-                                setSourceText(e.toString());
-                            }
-                        );
-                } else {
-                    setSourceText('Language not supported');
-                }
+
+                // 检测语言并同步
+                await detectLanguage(newText, setDetectLanguage);
+                syncSourceText();
+            } catch (e) {
+                setSourceText(e.toString());
             }
         } else {
+            // 处理选择翻译模式（默认模式）
             setWindowType('[SELECTION_TRANSLATE]');
-            let newText = text.trim();
-            if (deleteNewline) {
-                newText = text.replace(/\-\s+/g, '').replace(/\s+/g, ' ');
-            } else {
-                newText = text.trim();
-            }
-            if (incrementalTranslate) {
-                setSourceText((old) => {
-                    return old + ' ' + newText;
-                });
+
+            // 处理文本清理
+            const newText = cleanText(text, deleteNewline);
+
+            // 根据增量翻译配置更新源文本
+            if (incrementalTranslate && sourceText) {
+                setSourceText((old) => old + ' ' + newText);
             } else {
                 setSourceText(newText);
             }
-            detect_language(newText).then(() => {
-                syncSourceText();
-            });
+
+            // 检测语言并同步
+            await detectLanguage(newText, setDetectLanguage);
+            syncSourceText();
         }
     };
 
+    /**
+     * 键盘按下事件处理
+     * @param {Event} event - 键盘事件
+     */
     const keyDown = (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
+            // Enter键开始翻译（不按Shift）
             event.preventDefault();
-            detect_language(sourceText).then(() => {
+            detectLanguage(sourceText, setDetectLanguage).then(() => {
                 syncSourceText();
             });
         }
         if (event.key === 'Escape') {
+            // Escape键隐藏窗口
             appWindow.hide();
         }
     };
 
-    const handleSpeak = async () => {
-        const instanceKey = ttsServiceList[0];
-        let detected = detectLanguage;
-        if (detected === '') {
-            detected = await detect(sourceText);
-            setDetectLanguage(detected);
-        }
-        if (getServiceSouceType(instanceKey) === ServiceSourceType.PLUGIN) {
-            if (!(detected in ttsPluginInfo.language)) {
-                throw new Error('Language not supported');
-            }
-            const pluginConfig = serviceInstanceConfigMap[instanceKey];
-            let [func, utils] = await invoke_plugin('tts', getServiceName(instanceKey));
-            let data = await func(sourceText, ttsPluginInfo.language[detected], {
-                config: pluginConfig,
-                utils,
-            });
-            speak(data);
-        } else {
-            if (!(detected in builtinTtsServices[getServiceName(instanceKey)].Language)) {
-                throw new Error('Language not supported');
-            }
-            const instanceConfig = serviceInstanceConfigMap[instanceKey];
-            let data = await builtinTtsServices[getServiceName(instanceKey)].tts(
-                sourceText,
-                builtinTtsServices[getServiceName(instanceKey)].Language[detected],
-                {
-                    config: instanceConfig,
-                }
-            );
-            speak(data);
-        }
-    };
-
+    // 监听窗口隐藏配置变化，设置文本监听器
     useEffect(() => {
         if (hideWindow !== null) {
             if (unlisten) {
@@ -218,6 +158,7 @@ export default function SourceArea(props) {
                     f();
                 });
             }
+            // 监听新文本事件
             unlisten = listen('new_text', (event) => {
                 appWindow.setFocus();
                 handleNewText(event.payload);
@@ -225,16 +166,7 @@ export default function SourceArea(props) {
         }
     }, [hideWindow]);
 
-    useEffect(() => {
-        if (ttsServiceList && getServiceSouceType(ttsServiceList[0]) === ServiceSourceType.PLUGIN) {
-            readTextFile(`plugins/tts/${getServiceName(ttsServiceList[0])}/info.json`, {
-                dir: BaseDirectory.AppConfig,
-            }).then((infoStr) => {
-                setTtsPluginInfo(JSON.parse(infoStr));
-            });
-        }
-    }, [ttsServiceList]);
-
+    // 监听多个配置变化，初始化并获取文本
     useEffect(() => {
         if (
             deleteNewline !== null &&
@@ -249,128 +181,15 @@ export default function SourceArea(props) {
         }
     }, [deleteNewline, incrementalTranslate, recognizeLanguage, recognizeServiceList, hideWindow]);
 
-    useEffect(() => {
-        textAreaRef.current.style.height = '50px';
-        textAreaRef.current.style.height = textAreaRef.current.scrollHeight + 'px';
-    }, [sourceText]);
+    // 包装TTS功能
+    const handleSpeakWrapper = async (text, detectedLang) => {
+        return handleSpeak(text, detectedLang, setDetectLanguage);
+    };
 
+    // 包装语言检测功能
     const detect_language = async (text) => {
-        setDetectLanguage(await detect(text));
+        return detectLanguage(text, setDetectLanguage);
     };
-
-    let sourceTextChangeTimer = null;
-    const changeSourceText = async (text) => {
-        setDetectLanguage('');
-        await setSourceText(text);
-        if (dynamicTranslate) {
-            if (sourceTextChangeTimer) {
-                clearTimeout(sourceTextChangeTimer);
-            }
-            sourceTextChangeTimer = setTimeout(() => {
-                detect_language(text).then(() => {
-                    syncSourceText();
-                });
-            }, 1000);
-        }
-    };
-
-    const transformVarName = function (str) {
-        let str2 = str;
-
-        // snake_case to SNAKE_CASE
-        if (/_[a-z]/.test(str2)) {
-            str2 = str2
-                .split('_')
-                .map((it) => it.toLocaleUpperCase())
-                .join('_');
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // SNAKE_CASE to kebab-case
-        if (/^[A-Z]+(_[A-Z]+)*$/.test(str2)) {
-            str2 = str2
-                .split('_')
-                .map((it) => it.toLocaleLowerCase())
-                .join('-');
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // kebab-case to dot.notation
-        if (/-/.test(str2)) {
-            str2 = str2
-                .split('-')
-                .map((it) => it.toLocaleLowerCase())
-                .join('.');
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // dot.notation to space separated
-        if (/\.[a-z]/.test(str2)) {
-            str2 = str2.replaceAll(/(\.)([a-z])/g, (_, _2, it) => ' ' + it);
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // space separated to Title Case
-        if (/\s[a-z]/.test(str2)) {
-            str2 = str2.replaceAll(/\s([a-z])/g, (_, it) => ' ' + it.toLocaleUpperCase());
-            str2 = str2.substring(0, 1).toLocaleUpperCase() + str2.substring(1);
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // Title Case to CamelCase
-        if (/\s[A-Z]/.test(str2)) {
-            str2 = str2.replaceAll(/\s([A-Z])/g, (_, it) => it);
-            str2 = str2.substring(0, 1).toLocaleLowerCase() + str2.substring(1);
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // CamelCase to PascalCase
-        if (/^[a-z]+[A-Z]+/.test(str2)) {
-            str2 = str2.substring(0, 1).toLocaleUpperCase() + str2.substring(1);
-        }
-        if (str2 !== str) {
-            return str2;
-        }
-
-        // PascalCase to snake_case
-        if (/[^\s][A-Z]/.test(str2)) {
-            str2 = str2.replaceAll(/[A-Z]/g, (it, offset) => {
-                return (offset == 0 ? '' : '_') + it.toLocaleLowerCase();
-            });
-        }
-
-        return str2;
-    };
-    useEffect(() => {
-        textAreaRef.current.addEventListener('keydown', async (event) => {
-            if (event.altKey && event.shiftKey && event.code === 'KeyU') {
-                const originText = textAreaRef.current.value;
-                const selectionStart = textAreaRef.current.selectionStart;
-                const selectionEnd = textAreaRef.current.selectionEnd;
-                const selectionText = originText.substring(selectionStart, selectionEnd);
-
-                const convertedText = transformVarName(selectionText);
-                const targetText =
-                    originText.substring(0, selectionStart) + convertedText + originText.substring(selectionEnd);
-
-                await changeSourceText(targetText);
-                textAreaRef.current.selectionStart = selectionStart;
-                textAreaRef.current.selectionEnd = selectionStart + convertedText.length;
-            }
-        });
-    }, [textAreaRef]);
 
     return (
         <div className={hideSource && windowType !== '[INPUT_TRANSLATE]' && 'hidden'}>
@@ -379,110 +198,36 @@ export default function SourceArea(props) {
                 className='bg-content1 rounded-[10px] mt-[1px] pb-0 h-full'
             >
                 <Toaster />
+                {/* 卡片主体：文本编辑区 */}
                 <CardBody
                     className='bg-content1 p-[12px] h-[calc(100vh-85px)] pb-0 overflow-y-auto cursor-text thin-scrollbar'
-                    onClick={() => {
-                        textAreaRef.current.focus();
+                    onClick={(e) => {
+                        // 确保点击空白区域时也能聚焦到文本框
+                        const textEditor = e.currentTarget.querySelector('textarea');
+                        if (textEditor) {
+                            textEditor.focus();
+                        }
                     }}
                 >
-                    <textarea
-                        autoFocus
-                        ref={textAreaRef}
-                        className={`text-[${appFontSize}px] bg-content1 h-full w-full resize-none outline-none cursor-text`}
-                        value={sourceText}
-                        onKeyDown={keyDown}
-                        onChange={(e) => {
-                            const v = e.target.value;
-                            changeSourceText(v);
-                        }}
+                    <TextEditor
+                        sourceText={sourceText}
+                        appFontSize={appFontSize}
+                        changeSourceText={changeSourceText}
+                        keyDownHandler={keyDown}
                     />
                 </CardBody>
 
-                <CardFooter className='bg-content1 rounded-none rounded-b-[10px] flex justify-between px-[12px] p-[5px]'>
-                    <div className='flex justify-start'>
-                        <ButtonGroup className='mr-[5px]'>
-                            <Tooltip content={t('translate.speak')}>
-                                <Button
-                                    isIconOnly
-                                    variant='light'
-                                    size='sm'
-                                    onPress={() => {
-                                        handleSpeak().catch((e) => {
-                                            toast.error(e.toString(), { style: toastStyle });
-                                        });
-                                    }}
-                                >
-                                    <HiOutlineVolumeUp className='text-[16px]' />
-                                </Button>
-                            </Tooltip>
-                            <Tooltip content={t('translate.copy')}>
-                                <Button
-                                    isIconOnly
-                                    variant='light'
-                                    size='sm'
-                                    onPress={() => {
-                                        writeText(sourceText);
-                                    }}
-                                >
-                                    <MdContentCopy className='text-[16px]' />
-                                </Button>
-                            </Tooltip>
-                            <Tooltip content={t('translate.delete_newline')}>
-                                <Button
-                                    isIconOnly
-                                    variant='light'
-                                    size='sm'
-                                    onPress={() => {
-                                        const newText = sourceText.replace(/\-\s+/g, '').replace(/\s+/g, ' ');
-                                        setSourceText(newText);
-                                        detect_language(newText).then(() => {
-                                            syncSourceText();
-                                        });
-                                    }}
-                                >
-                                    <MdSmartButton className='text-[16px]' />
-                                </Button>
-                            </Tooltip>
-                            <Tooltip content={t('common.clear')}>
-                                <Button
-                                    variant='light'
-                                    size='sm'
-                                    isIconOnly
-                                    isDisabled={sourceText === ''}
-                                    onPress={() => {
-                                        setSourceText('');
-                                    }}
-                                >
-                                    <LuDelete className='text-[16px]' />
-                                </Button>
-                            </Tooltip>
-                        </ButtonGroup>
-                        {detectLanguage !== '' && (
-                            <Chip
-                                size='sm'
-                                color='secondary'
-                                variant='dot'
-                                className='my-auto'
-                            >
-                                {t(`languages.${detectLanguage}`)}
-                            </Chip>
-                        )}
-                    </div>
-                    <Tooltip content={t('translate.translate')}>
-                        <Button
-                            size='sm'
-                            color='primary'
-                            variant='light'
-                            isIconOnly
-                            className='text-[14px] font-bold'
-                            startContent={<HiTranslate className='text-[16px]' />}
-                            onPress={() => {
-                                detect_language(sourceText).then(() => {
-                                    syncSourceText();
-                                });
-                            }}
-                        />
-                    </Tooltip>
+                {/* 卡片底部：工具栏 */}
+                <CardFooter className='bg-content1 rounded-none rounded-b-[10px]'>
+                    <Toolbar
+                        sourceText={sourceText}
+                        detectLanguage={detectLanguage}
+                        setSourceText={setSourceText}
+                        detect_language={detect_language}
+                        syncSourceText={syncSourceText}
+                        handleSpeak={handleSpeakWrapper}
+                        toastStyle={toastStyle}
+                    />
                 </CardFooter>
             </Card>
         </div>
