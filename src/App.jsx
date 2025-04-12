@@ -6,7 +6,6 @@ import React, { useEffect } from 'react';
 import { useTheme } from 'next-themes';
 
 import { invoke } from '@tauri-apps/api/tauri';
-import { emit } from '@tauri-apps/api/event';
 import Screenshot from './window/Screenshot';
 import Translate from './window/Translate';
 import Recognize from './window/Recognize';
@@ -55,12 +54,7 @@ export default function App() {
                     e.preventDefault();
                 }
                 if (e.key === 'Escape') {
-                    if (appWindow.label === 'translate') {
-                        await appWindow.hide();
-                        await emit('tauri://window-hidden', {});
-                    } else {
-                        await appWindow.close();
-                    }
+                    await appWindow.close();
                 }
             });
         } else {
@@ -73,12 +67,7 @@ export default function App() {
                     e.preventDefault();
                 }
                 if (e.key === 'Escape') {
-                    if (appWindow.label === 'translate') {
-                        await appWindow.hide();
-                        await emit('tauri://window-hidden', {});
-                    } else {
-                        await appWindow.close();
-                    }
+                    await appWindow.close();
                 }
             });
         }

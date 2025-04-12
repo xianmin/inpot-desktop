@@ -371,7 +371,7 @@ pub fn input_translate() {
         .0
         .lock()
         .unwrap()
-        .replace_range(.., "[INPUT_TRANSLATE_FROM_TRAY]");
+        .replace_range(.., "[INPUT_TRANSLATE]");
 
     // 如果窗口已存在，直接使用它，避免重复创建
     if let Some(window) = window_option {
@@ -380,8 +380,12 @@ pub fn input_translate() {
         window.show().unwrap();
         window.set_focus().unwrap();
 
-        // 发送消息到前端，使用特殊标记
-        window.emit("new_text", "[INPUT_TRANSLATE_FROM_TRAY]").unwrap();
+        // 获取窗口位置配置
+        let position_type = match get("translate_window_position") {
+            Some(v) => v.as_str().unwrap().to_string(),
+            None => "mouse".to_string(),
+        };
+
         return;
     }
 

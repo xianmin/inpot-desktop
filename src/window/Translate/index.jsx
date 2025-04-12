@@ -1,17 +1,63 @@
 import { Spacer, Button, Image } from '@nextui-org/react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { appWindow } from '@tauri-apps/api/window';
-import { emit } from '@tauri-apps/api/event';
+import { listen } from '@tauri-apps/api/event';
+import { BsPinFill } from 'react-icons/bs';
 
 import LanguageArea from './components/LanguageArea';
 import SourceArea from './components/SourceArea';
 import TargetArea from './components/TargetArea';
 import { osType } from '../../utils/env';
 import { useConfig } from '../../hooks';
-import { useWindowManager } from './hooks/useWindowManager';
-import { usePluginLoader } from './hooks/usePluginLoader';
+import { store } from '../../utils/store';
+import { info } from 'tauri-plugin-log-api';
+
+let blurTimeout = null;
+let resizeTimeout = null;
+let moveTimeout = null;
+
+const listenBlur = () => {
+    return listen('tauri://blur', () => {
+        if (appWindow.label === 'translate') {
+            if (blurTimeout) {
+                clearTimeout(blurTimeout);
+            }
+            info('Blur');
+            // 100ms后隐藏窗口，而不是关闭它
+            // 因为在 windows 下拖动窗口时会先切换成 blur 再立即切换成 focus
+            blurTimeout = setTimeout(async () => {
+                info('Hiding window instead of closing');
+                // 仅隐藏窗口，不关闭
+                await appWindow.hide();
+            }, 100);
+        }
+    });
+};
+
+let unlisten = listenBlur();
+// 取消 blur 监听
+const unlistenBlur = () => {
+    unlisten.then((f) => {
+        f();
+    });
+};
+
+// 监听 focus 事件取消 blurTimeout 时间之内的关闭窗口
+void listen('tauri://focus', () => {
+    info('Focus');
+    if (blurTimeout) {
+        info('Cancel Close');
+        clearTimeout(blurTimeout);
+    }
+});
+// 监听 move 事件取消 blurTimeout 时间之内的关闭窗口
+void listen('tauri://move', () => {
+    info('Move');
+    if (blurTimeout) {
+        info('Cancel Close');
+        clearTimeout(blurTimeout);
+    }
+});
 
 export default function Translate() {
     const [closeOnBlur] = useConfig('translate_close_on_blur', true);
@@ -98,62 +144,71 @@ export default function Translate() {
                     className='fixed top-0 left-0 right-0 h-[35px]'
                     data-tauri-drag-region='true'
                 />
-                <div className='h-[35px] w-full flex items-center px-2 relative'>
-                    <div
-                        className={`${hideLanguage && 'hidden'} w-full flex justify-center items-center`}
-                        data-tauri-drag-region='true'
+                <div className={`h-[35px] w-full flex ${osType === 'Darwin' ? 'justify-end' : 'justify-between'}`}>
+                    <Button
+                        isIconOnly
+                        size='sm'
+                        variant='flat'
+                        disableAnimation
+                        className='my-auto bg-transparent'
+                        onPress={() => {
+                            if (pined) {
+                                if (closeOnBlur) {
+                                    unlisten = listenBlur();
+                                }
+                                appWindow.setAlwaysOnTop(false);
+                            } else {
+                                unlistenBlur();
+                                appWindow.setAlwaysOnTop(true);
+                            }
+                            setPined(!pined);
+                        }}
                     >
-                        <div className='w-[180px]'>
-                            <LanguageArea />
-                        </div>
-                    </div>
-
-                    <div className='absolute right-2 z-10'>
-                        <Button
-                            isIconOnly
-                            size='sm'
-                            variant='flat'
-                            disableAnimation
-                            className={`${osType === 'Darwin' && 'hidden'} bg-transparent`}
-                            onPress={() => {
-                                // 点击关闭按钮时只隐藏窗口，不真正关闭
-                                void appWindow.hide();
-                                // 触发window-hidden事件，让SourceArea组件知道窗口被隐藏了
-                                void emit('tauri://window-hidden', {});
-                            }}
-                        >
-                            <AiFillCloseCircle className='text-[20px] text-default-400' />
-                        </Button>
-                    </div>
+                        <BsPinFill className={`text-[20px] ${pined ? 'text-primary' : 'text-default-400'}`} />
+                    </Button>
+                    <Button
+                        isIconOnly
+                        size='sm'
+                        variant='flat'
+                        disableAnimation
+                        className={`my-auto ${osType === 'Darwin' && 'hidden'} bg-transparent`}
+                        onPress={() => {
+                            // 点击关闭按钮时只隐藏窗口，不真正关闭
+                            void appWindow.hide();
+                        }}
+                    >
+                        <AiFillCloseCircle className='text-[20px] text-default-400' />
+                    </Button>
                 </div>
-                <div className={`h-[calc(100vh-35px)]`}>
-                    <div className='h-full overflow-hidden'>
-                        <div className='flex flex-row gap-2 h-full'>
-                            <div className='w-1/2 pl-[8px]'>
-                                {serviceInstanceConfigMap !== null && (
-                                    <SourceArea
-                                        pluginList={pluginList}
-                                        serviceInstanceConfigMap={serviceInstanceConfigMap}
-                                    />
-                                )}
-                            </div>
-                            <div className='w-1/2 h-full overflow-y-auto thin-scrollbar'>
-                                <DragDropContext onDragEnd={onDragEnd}>
-                                    <Droppable
-                                        droppableId='droppable'
-                                        direction='vertical'
+                <div className={`${osType === 'Linux' ? 'h-[calc(100vh-37px)]' : 'h-[calc(100vh-35px)]'} px-[8px]`}>
+                    <div className='h-full overflow-y-auto'>
+                        <div>
+                            {serviceInstanceConfigMap !== null && (
+                                <SourceArea
+                                    pluginList={pluginList}
+                                    serviceInstanceConfigMap={serviceInstanceConfigMap}
+                                />
+                            )}
+                        </div>
+                        <div className={`${hideLanguage && 'hidden'}`}>
+                            <LanguageArea />
+                            <Spacer y={2} />
+                        </div>
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <Droppable
+                                droppableId='droppable'
+                                direction='vertical'
+                            >
+                                {(provided) => (
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
                                     >
-                                        {(provided) => (
-                                            <div
-                                                ref={provided.innerRef}
-                                                {...provided.droppableProps}
-                                            >
-                                                {translateServiceInstanceList !== null &&
-                                                    serviceInstanceConfigMap !== null &&
-                                                    translateServiceInstanceList.map((serviceInstanceKey, index) => {
-                                                        const config =
-                                                            serviceInstanceConfigMap[serviceInstanceKey] ?? {};
-                                                        const enable = config['enable'] ?? true;
+                                        {translateServiceInstanceList !== null &&
+                                            serviceInstanceConfigMap !== null &&
+                                            translateServiceInstanceList.map((serviceInstanceKey, index) => {
+                                                const config = serviceInstanceConfigMap[serviceInstanceKey] ?? {};
+                                                const enable = config['enable'] ?? true;
 
                                                         return enable ? (
                                                             <Draggable

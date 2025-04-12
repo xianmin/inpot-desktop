@@ -5,7 +5,7 @@ import { writeText } from '@tauri-apps/api/clipboard';
 import { HiOutlineVolumeUp } from 'react-icons/hi';
 import { appWindow } from '@tauri-apps/api/window';
 import toast, { Toaster } from 'react-hot-toast';
-import { listen, emit } from '@tauri-apps/api/event';
+import { listen } from '@tauri-apps/api/event';
 import { MdContentCopy } from 'react-icons/md';
 import { MdSmartButton } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +25,6 @@ import { debug } from 'tauri-plugin-log-api';
 
 export const sourceTextAtom = atom('');
 export const detectLanguageAtom = atom('');
-export const translatedAtom = atom(false);
 
 let unlisten = null;
 let timer = null;
@@ -35,7 +34,6 @@ export default function SourceArea(props) {
     const [appFontSize] = useConfig('app_font_size', 16);
     const [sourceText, setSourceText, syncSourceText] = useSyncAtom(sourceTextAtom);
     const [detectLanguage, setDetectLanguage] = useAtom(detectLanguageAtom);
-    const [translated, setTranslated] = useAtom(translatedAtom);
     const [incrementalTranslate] = useConfig('incremental_translate', false);
     const [dynamicTranslate] = useConfig('dynamic_translate', false);
     const [deleteNewline] = useConfig('translate_delete_newline', false);
@@ -53,38 +51,21 @@ export default function SourceArea(props) {
 
     const handleNewText = async (text) => {
         text = text.trim();
-
         if (hideWindow) {
             appWindow.hide();
         } else {
             appWindow.show();
             appWindow.setFocus();
         }
-
         // 清空检测语言
         setDetectLanguage('');
-
         if (text === '[INPUT_TRANSLATE]') {
-            // 常规的输入翻译模式（不是从系统托盘打开的）
-            const prevWindowType = windowType;
             setWindowType('[INPUT_TRANSLATE]');
             appWindow.show();
             appWindow.setFocus();
-
-            // 首次切换到输入翻译模式时才清空内容
-            if (prevWindowType !== '[INPUT_TRANSLATE]') {
-                setSourceText('', true);
-                setTranslated(false);
-            }
-        } else if (text === '[INPUT_TRANSLATE_FROM_TRAY]') {
-            // 从系统托盘点击打开的窗口，保留现有内容
-            setWindowType('[INPUT_TRANSLATE]');
-            appWindow.show();
-            appWindow.setFocus();
-            // 不做任何内容修改
+            setSourceText('', true);
         } else if (text === '[IMAGE_TRANSLATE]') {
             setWindowType('[IMAGE_TRANSLATE]');
-            setTranslated(false);
             const base64 = await invoke('get_base64');
             const serviceInstanceKey = recognizeServiceList[0];
             if (getServiceSouceType(serviceInstanceKey) === ServiceSourceType.PLUGIN) {
@@ -189,16 +170,10 @@ export default function SourceArea(props) {
             event.preventDefault();
             detect_language(sourceText).then(() => {
                 syncSourceText();
-                setTranslated(true);
             });
         }
         if (event.key === 'Escape') {
-            if (translated && sourceText.trim() !== '') {
-                setSourceText('');
-                setTranslated(false);
-            }
             appWindow.hide();
-            emit('tauri://window-hidden', {});
         }
     };
 
@@ -397,20 +372,6 @@ export default function SourceArea(props) {
         });
     }, [textAreaRef]);
 
-    // 全局监听窗口隐藏事件
-    useEffect(() => {
-        const unlistenHide = listen('tauri://window-hidden', async () => {
-            if (translated && sourceText.trim() !== '') {
-                setSourceText('');
-                setTranslated(false);
-            }
-        });
-
-        return () => {
-            unlistenHide.then((f) => f());
-        };
-    }, [translated, sourceText]);
-
     return (
         <div className={hideSource && windowType !== '[INPUT_TRANSLATE]' && 'hidden'}>
             <Card
@@ -518,7 +479,6 @@ export default function SourceArea(props) {
                             onPress={() => {
                                 detect_language(sourceText).then(() => {
                                     syncSourceText();
-                                    setTranslated(true);
                                 });
                             }}
                         />
