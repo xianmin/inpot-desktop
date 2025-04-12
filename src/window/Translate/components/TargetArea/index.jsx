@@ -17,7 +17,10 @@ import useMeasure from 'react-use-measure';
 import * as builtinCollectionServices from '../../../../services/collection';
 import { sourceLanguageAtom, targetLanguageAtom } from '../LanguageArea';
 import { useConfig, useToastStyle, useVoice } from '../../../../hooks';
-import { sourceTextAtom, detectLanguageAtom } from '../SourceArea';
+import {
+    sourceTextAtom as defaultSourceTextAtom,
+    detectLanguageAtom as defaultDetectLanguageAtom,
+} from '../SourceArea';
 import { invoke_plugin } from '../../../../utils/invoke_plugin';
 import * as builtinServices from '../../../../services/translate';
 import * as builtinTtsServices from '../../../../services/tts';
@@ -44,7 +47,16 @@ import { invokeOnce, translateWithPlugin, translateWithBuiltin, handleCollection
 let translateID = [];
 
 export default function TargetArea(props) {
-    const { index, name, translateServiceInstanceList, pluginList, serviceInstanceConfigMap, ...drag } = props;
+    const {
+        index,
+        name,
+        translateServiceInstanceList,
+        pluginList,
+        serviceInstanceConfigMap,
+        sourceTextAtom = defaultSourceTextAtom,
+        detectLanguageAtom = defaultDetectLanguageAtom,
+        ...drag
+    } = props;
 
     // 基础状态
     const [currentTranslateServiceInstanceKey, setCurrentTranslateServiceInstanceKey] = useState(name);

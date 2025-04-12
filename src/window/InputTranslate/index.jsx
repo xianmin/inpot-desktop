@@ -5,7 +5,8 @@ import { appWindow } from '@tauri-apps/api/window';
 import { emit, listen } from '@tauri-apps/api/event';
 
 import LanguageArea from '../Translate/components/LanguageArea';
-import SourceArea from '../Translate/components/SourceArea';
+import InputSourceArea from './components/InputSourceArea';
+import { inputSourceTextAtom, inputDetectLanguageAtom } from './components/InputSourceArea';
 import TargetArea from '../Translate/components/TargetArea';
 import WindowControl from '../../components/WindowControl';
 import { osType } from '../../utils/env';
@@ -115,7 +116,7 @@ export default function InputTranslate() {
                         <div className='flex flex-row gap-2 h-full'>
                             <div className='w-1/2 pl-[8px]'>
                                 {serviceInstanceConfigMap !== null && (
-                                    <SourceArea
+                                    <InputSourceArea
                                         pluginList={pluginList}
                                         serviceInstanceConfigMap={serviceInstanceConfigMap}
                                     />
@@ -161,6 +162,8 @@ export default function InputTranslate() {
                                                                             serviceInstanceConfigMap={
                                                                                 serviceInstanceConfigMap
                                                                             }
+                                                                            sourceTextAtom={inputSourceTextAtom}
+                                                                            detectLanguageAtom={inputDetectLanguageAtom}
                                                                         />
                                                                         <Spacer y={2} />
                                                                     </div>

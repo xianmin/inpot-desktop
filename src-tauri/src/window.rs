@@ -380,19 +380,16 @@ pub fn input_translate() {
         window.show().unwrap();
         window.set_focus().unwrap();
 
-        // 获取窗口位置配置
-        let position_type = match get("translate_window_position") {
-            Some(v) => v.as_str().unwrap().to_string(),
-            None => "mouse".to_string(),
-        };
-
+        // 通知窗口已激活（不需要发送文本）
+        window.emit("activate", "").unwrap();
         return;
     }
 
     // 如果窗口不存在，创建新窗口
     info!("创建新的输入翻译窗口");
     let window = input_translate_window();
-    window.emit("new_text", "[INPUT_TRANSLATE_FROM_TRAY]").unwrap();
+    // 不需要发送翻译文本，InputTranslate窗口使用自己的输入组件
+    window.emit("activate", "").unwrap();
 }
 
 /// 特定文本翻译功能
