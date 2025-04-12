@@ -363,7 +363,7 @@ pub fn selection_translate() {
 pub fn input_translate() {
     let app_handle = APP.get().unwrap();
     // 检查窗口是否已经存在
-    let window_option = app_handle.get_window("translate");
+    let window_option = app_handle.get_window("input_translate");
 
     // 首先设置状态
     let state: tauri::State<StringWrapper> = app_handle.state();
@@ -375,7 +375,7 @@ pub fn input_translate() {
 
     // 如果窗口已存在，直接使用它，避免重复创建
     if let Some(window) = window_option {
-        info!("快速显示已存在的翻译窗口");
+        info!("快速显示已存在的输入翻译窗口");
         // 确保窗口可见
         window.show().unwrap();
         window.set_focus().unwrap();
@@ -386,16 +386,8 @@ pub fn input_translate() {
     }
 
     // 如果窗口不存在，创建新窗口
-    info!("创建新的翻译窗口");
-    let window = translate_window();
-    let position_type = match get("translate_window_position") {
-        Some(v) => v.as_str().unwrap().to_string(),
-        None => "mouse".to_string(),
-    };
-    if position_type == "mouse" {
-        window.center().unwrap();
-    }
-
+    info!("创建新的输入翻译窗口");
+    let window = input_translate_window();
     window.emit("new_text", "[INPUT_TRANSLATE_FROM_TRAY]").unwrap();
 }
 
@@ -570,4 +562,60 @@ pub fn updater_window() {
         window.set_size(tauri::LogicalSize::new(600, 400)).unwrap();
         window.center().unwrap();
     }
+}
+
+// ==================== 输入翻译窗口功能 ====================
+
+/// 创建并配置输入翻译窗口
+///
+/// 创建一个专门用于手动输入文本翻译的窗口。
+///
+/// # 返回值
+///
+/// 返回配置好的输入翻译窗口实例
+fn input_translate_window() -> Window {
+    // 获取或创建输入翻译窗口
+    let (window, exists) = build_window("input_translate", "输入翻译");
+
+    // 确保窗口可见并获得焦点
+    window.show().unwrap();
+    window.set_focus().unwrap();
+
+    if exists {
+        return window;
+    }
+
+    // 配置窗口属性 - 不跳过任务栏，让用户可以从任务栏找到
+    // 与普通翻译窗口不同
+    window.set_skip_taskbar(false).unwrap();
+
+    // 获取窗口尺寸
+    let (width, height) = get_window_size(
+        "input_translate_window_width",
+        "input_translate_window_height",
+        500,
+        350
+    );
+
+    // 设置窗口尺寸
+    let monitor = window.current_monitor().unwrap().unwrap();
+    let dpi = monitor.scale_factor();
+
+    window
+        .set_size(tauri::PhysicalSize::new(
+            (width as f64) * dpi,
+            (height as f64) * dpi,
+        ))
+        .unwrap();
+
+    // 设置最小窗口尺寸
+    window.set_min_size(Some(tauri::PhysicalSize::new(
+        300.0 * dpi,
+        200.0 * dpi,
+    ))).unwrap();
+
+    // 将窗口居中显示
+    window.center().unwrap();
+
+    window
 }

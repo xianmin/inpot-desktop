@@ -16,9 +16,11 @@ import Config from './window/Config';
 import { useConfig } from './hooks';
 import './style.css';
 import './i18n';
+import InputTranslate from './window/InputTranslate';
 
 const windowMap = {
     translate: <Translate />,
+    input_translate: <InputTranslate />,
     screenshot: <Screenshot />,
     recognize: <Recognize />,
     config: <Config />,
