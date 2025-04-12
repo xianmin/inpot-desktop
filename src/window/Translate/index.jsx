@@ -1,7 +1,6 @@
-import { Spacer, Button } from '@nextui-org/react';
+import { Spacer, Button, Image } from '@nextui-org/react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useState, useEffect } from 'react';
-import { BsPinFill } from 'react-icons/bs';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { appWindow } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
@@ -16,7 +15,6 @@ import { usePluginLoader } from './hooks/usePluginLoader';
 
 export default function Translate() {
     const [closeOnBlur] = useConfig('translate_close_on_blur', true);
-    const [alwaysOnTop] = useConfig('translate_always_on_top', false);
     const [windowPosition] = useConfig('translate_window_position', 'mouse');
     const [rememberWindowSize] = useConfig('translate_remember_window_size', false);
     const [translateServiceInstanceList, setTranslateServiceInstanceList] = useConfig('translate_service_list', [
@@ -31,12 +29,10 @@ export default function Translate() {
     const [ttsServiceInstanceList] = useConfig('tts_service_list', ['lingva_tts']);
     const [collectionServiceInstanceList] = useConfig('collection_service_list', []);
     const [hideLanguage] = useConfig('hide_language', false);
-    const [pined, setPined] = useState(false);
 
     // 窗口管理
     const { listenBlur, unlistenBlur } = useWindowManager({
         closeOnBlur,
-        alwaysOnTop,
         windowPosition,
         rememberWindowSize,
     });
@@ -68,15 +64,6 @@ export default function Translate() {
             unlistenBlur();
         }
     }, [closeOnBlur, unlistenBlur]);
-
-    // 是否默认置顶
-    useEffect(() => {
-        if (alwaysOnTop !== null && alwaysOnTop) {
-            appWindow.setAlwaysOnTop(true);
-            unlistenBlur();
-            setPined(true);
-        }
-    }, [alwaysOnTop, unlistenBlur]);
 
     useEffect(() => {
         loadPluginList();
@@ -112,30 +99,6 @@ export default function Translate() {
                     data-tauri-drag-region='true'
                 />
                 <div className='h-[35px] w-full flex items-center px-2 relative'>
-                    <div className='absolute left-2 z-10'>
-                        <Button
-                            isIconOnly
-                            size='sm'
-                            variant='flat'
-                            disableAnimation
-                            className='bg-transparent'
-                            onPress={() => {
-                                if (pined) {
-                                    if (closeOnBlur) {
-                                        listenBlur();
-                                    }
-                                    appWindow.setAlwaysOnTop(false);
-                                } else {
-                                    unlistenBlur();
-                                    appWindow.setAlwaysOnTop(true);
-                                }
-                                setPined(!pined);
-                            }}
-                        >
-                            <BsPinFill className={`text-[20px] ${pined ? 'text-primary' : 'text-default-400'}`} />
-                        </Button>
-                    </div>
-
                     <div
                         className={`${hideLanguage && 'hidden'} w-full flex justify-center items-center`}
                         data-tauri-drag-region='true'

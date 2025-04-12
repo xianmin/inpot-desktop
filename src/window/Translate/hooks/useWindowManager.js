@@ -4,7 +4,7 @@ import { store } from '../../../utils/store';
 import { info } from 'tauri-plugin-log-api';
 import { useRef, useEffect, useCallback } from 'react';
 
-export function useWindowManager({ closeOnBlur, alwaysOnTop, windowPosition, rememberWindowSize }) {
+export function useWindowManager({ closeOnBlur, windowPosition, rememberWindowSize }) {
   const blurTimeoutRef = useRef(null);
   const resizeTimeoutRef = useRef(null);
   const moveTimeoutRef = useRef(null);

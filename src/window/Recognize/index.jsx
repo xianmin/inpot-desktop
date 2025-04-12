@@ -4,8 +4,7 @@ import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { appWindow } from '@tauri-apps/api/window';
 import React, { useState, useEffect } from 'react';
 import { listen } from '@tauri-apps/api/event';
-import { Button } from '@nextui-org/react';
-import { BsPinFill } from 'react-icons/bs';
+import { Button, Image } from '@nextui-org/react';
 import { atom, useAtom } from 'jotai';
 
 import WindowControl from '../../components/WindowControl';
@@ -53,7 +52,6 @@ void listen('tauri://focus', () => {
 export default function Recognize() {
     const [pluginList, setPluginList] = useAtom(pluginListAtom);
     const [closeOnBlur] = useConfig('recognize_close_on_blur', false);
-    const [pined, setPined] = useState(false);
     const [serviceInstanceList] = useConfig('recognize_service_list', ['system', 'tesseract']);
     const [serviceInstanceConfigMap, setServiceInstanceConfigMap] = useState(null);
 
@@ -115,27 +113,14 @@ export default function Recognize() {
                     className='fixed top-[5px] left-[5px] right-[5px] h-[30px]'
                 />
                 <div className={`h-[35px] flex ${osType === 'Darwin' ? 'justify-end' : 'justify-between'}`}>
-                    <Button
-                        isIconOnly
-                        size='sm'
-                        variant='flat'
-                        disableAnimation
-                        className='my-auto mx-[5px] bg-transparent'
-                        onPress={() => {
-                            if (pined) {
-                                if (closeOnBlur) {
-                                    unlisten = listenBlur();
-                                }
-                                appWindow.setAlwaysOnTop(false);
-                            } else {
-                                unlistenBlur();
-                                appWindow.setAlwaysOnTop(true);
-                            }
-                            setPined(!pined);
-                        }}
-                    >
-                        <BsPinFill className={`text-[20px] ${pined ? 'text-primary' : 'text-default-400'}`} />
-                    </Button>
+                    <div className='flex items-center ml-2'>
+                        <Image
+                            src='/icon.png'
+                            alt='InPot Logo'
+                            className='w-[20px] h-[20px] mr-2'
+                        />
+                        <span className='text-sm font-medium'>文字识别</span>
+                    </div>
                     {osType !== 'Darwin' && <WindowControl />}
                 </div>
                 <div

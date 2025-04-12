@@ -252,8 +252,8 @@ fn translate_window() -> Window {
     let (width, height) = get_window_size(
         "translate_window_width",
         "translate_window_height",
-        450,
-        300
+        600,
+        450
     );
 
     // 设置窗口尺寸
