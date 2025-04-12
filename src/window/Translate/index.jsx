@@ -210,43 +210,39 @@ export default function Translate() {
                                                 const config = serviceInstanceConfigMap[serviceInstanceKey] ?? {};
                                                 const enable = config['enable'] ?? true;
 
-                                                        return enable ? (
-                                                            <Draggable
-                                                                key={serviceInstanceKey}
-                                                                draggableId={serviceInstanceKey}
-                                                                index={index}
+                                                return enable ? (
+                                                    <Draggable
+                                                        key={serviceInstanceKey}
+                                                        draggableId={serviceInstanceKey}
+                                                        index={index}
+                                                    >
+                                                        {(provided) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
                                                             >
-                                                                {(provided) => (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                    >
-                                                                        <TargetArea
-                                                                            {...provided.dragHandleProps}
-                                                                            index={index}
-                                                                            name={serviceInstanceKey}
-                                                                            translateServiceInstanceList={
-                                                                                translateServiceInstanceList
-                                                                            }
-                                                                            pluginList={pluginList}
-                                                                            serviceInstanceConfigMap={
-                                                                                serviceInstanceConfigMap
-                                                                            }
-                                                                        />
-                                                                        <Spacer y={2} />
-                                                                    </div>
-                                                                )}
-                                                            </Draggable>
-                                                        ) : (
-                                                            <></>
-                                                        );
-                                                    })}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </DragDropContext>
-                            </div>
-                        </div>
+                                                                <TargetArea
+                                                                    {...provided.dragHandleProps}
+                                                                    index={index}
+                                                                    name={serviceInstanceKey}
+                                                                    translateServiceInstanceList={
+                                                                        translateServiceInstanceList
+                                                                    }
+                                                                    pluginList={pluginList}
+                                                                    serviceInstanceConfigMap={serviceInstanceConfigMap}
+                                                                />
+                                                                <Spacer y={2} />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ) : (
+                                                    <></>
+                                                );
+                                            })}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                     </div>
                 </div>
             </div>

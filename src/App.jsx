@@ -67,7 +67,11 @@ export default function App() {
                     e.preventDefault();
                 }
                 if (e.key === 'Escape') {
-                    await appWindow.close();
+                    if (appWindow.label === 'translate' || appWindow.label === 'input_translate') {
+                        await appWindow.hide();
+                    } else {
+                        await appWindow.close();
+                    }
                 }
             });
         }
