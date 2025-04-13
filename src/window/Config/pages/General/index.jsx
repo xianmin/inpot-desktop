@@ -36,9 +36,9 @@ export default function General() {
     const [appFont, setAppFont] = useConfig('app_font', 'default');
     const [appFallbackFont, setAppFallbackFont] = useConfig('app_fallback_font', 'default');
     const [appFontSize, setAppFontSize] = useConfig('app_font_size', 16);
-    const [transparent, setTransparent] = useConfig('transparent', true);
+    const [transparent, setTransparent] = useConfig('transparent', false);
     const [devMode, setDevMode] = useConfig('dev_mode', false);
-    const [trayClickEvent, setTrayClickEvent] = useConfig('tray_click_event', 'config');
+    const [trayClickEvent, setTrayClickEvent] = useConfig('tray_click_event', 'translate');
     const [proxyEnable, setProxyEnable] = useConfig('proxy_enable', false);
     const [proxyHost, setProxyHost] = useConfig('proxy_host', '');
     const [proxyPort, setProxyPort] = useConfig('proxy_port', '');

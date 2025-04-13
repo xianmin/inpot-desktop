@@ -128,7 +128,7 @@ fn on_tray_click() {
     let event = match get("tray_click_event") {
         Some(v) => v.as_str().unwrap().to_string(),
         None => {
-            set("tray_click_event", "config");
+            set("tray_click_event", "translate");
             "config".to_string()
         }
     };
