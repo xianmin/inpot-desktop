@@ -1,8 +1,8 @@
 <img width="200px" src="public/icon.svg" align="left"/>
 
-# Pot (派了个萌的翻译器)
+# inPot （输入翻译器 - 基于 [Pot 3.0.6](https://github.com/pot-app/pot-desktop) ）
 
-> 🌈 一个跨平台的划词翻译软件 ([QQ 频道](https://pd.qq.com/s/akns94e1r))
+> 🌈 一个专注于输入翻译的跨平台软件
 
 ![License](https://img.shields.io/github/license/pot-app/pot-desktop.svg)
 ![Tauri](https://img.shields.io/badge/Tauri-1.6.8-blue?logo=tauri)
@@ -14,6 +14,18 @@
 
 <br/>
 <hr/>
+
+
+# 改动说明
+
+1. 独立的输入翻译窗口，输入框与翻译结果并排展示；
+2. 翻译窗口打开更快；
+
+**本项目完全根据个人需求改动，无任何开发维护计划！**
+
+<img src="asset/0.png">
+
+# 以下内容来自原版 README
 <div align="center">
 
 <h3>中文 | <a href='./README_EN.md'>English</a> | <a href='./README_KR.md'> 한글 </a></h3>
