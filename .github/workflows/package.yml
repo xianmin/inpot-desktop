@@ -17,14 +17,64 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Debug commit history
+              run: |
+                  echo "当前标签: $(git describe --tags)"
+                  echo "提交历史:"
+                  git log --pretty=format:"%h - %s (%cr)" -10
+                  echo "所有标签:"
+                  git tag -l
+
+            - name: Get previous tag
+              id: get_previous_tag
+              run: |
+                  # 获取所有标签并按版本排序
+                  ALL_TAGS=$(git tag --sort=-v:refname)
+                  # 当前标签
+                  CURRENT_TAG=$(git describe --tags)
+                  echo "当前标签: $CURRENT_TAG"
+
+                  # 获取所有标签中位于当前标签之前的第一个标签
+                  PREV_TAG=""
+                  for tag in $ALL_TAGS; do
+                    if [ "$tag" != "$CURRENT_TAG" ]; then
+                      PREV_TAG=$tag
+                      break
+                    fi
+                  done
+
+                  # 如果没有找到前一个标签，使用初始提交
+                  if [ -z "$PREV_TAG" ]; then
+                    PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+                    echo "没有找到前一个标签，使用初始提交: $PREV_TAG"
+                  else
+                    echo "找到前一个标签: $PREV_TAG"
+                  fi
+
+                  echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
+
+                  # 显示两个标签之间的提交
+                  echo "当前标签与前一个标签之间的提交:"
+                  git log --pretty=format:"%h - %s" $PREV_TAG..$CURRENT_TAG
+
             - name: Generate Changelog
               id: changelog
               uses: mikepenz/release-changelog-builder-action@v4
               with:
                   configuration: '.github/changelog-configuration.json'
                   outputFile: 'CHANGELOG.md'
+                  ignorePreReleases: 'false'
+                  fetchReleaseInformation: 'true'
+                  failOnError: 'false'
+                  commitMode: 'true'
+                  fromTag: ${{ steps.get_previous_tag.outputs.tag }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Display Generated Changelog
+              run: |
+                  echo "生成的 CHANGELOG 内容:"
+                  cat CHANGELOG.md
 
             - name: Upload Changelog
               uses: actions/upload-artifact@v4

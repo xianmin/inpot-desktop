@@ -1,0 +1,57 @@
+name: 手动生成 CHANGELOG
+on:
+    workflow_dispatch:
+        inputs:
+            fromTag:
+                description: '起始标签（例如 v3.2.0）'
+                required: true
+            toTag:
+                description: '结束标签（例如 v3.3.0，留空则使用最新标签）'
+                required: false
+
+jobs:
+    generate-changelog:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 获取版本范围信息
+              id: get_tags
+              run: |
+                  if [ -z "${{ github.event.inputs.toTag }}" ]; then
+                    TO_TAG=$(git describe --tags --abbrev=0)
+                  else
+                    TO_TAG=${{ github.event.inputs.toTag }}
+                  fi
+                  echo "从 ${{ github.event.inputs.fromTag }} 到 $TO_TAG 生成 CHANGELOG"
+                  echo "to_tag=$TO_TAG" >> $GITHUB_OUTPUT
+
+                  # 显示两个标签之间的提交
+                  echo "两个标签之间的提交:"
+                  git log --pretty=format:"%h - %s" ${{ github.event.inputs.fromTag }}..$TO_TAG
+
+            - name: Generate Changelog
+              id: changelog
+              uses: mikepenz/release-changelog-builder-action@v4
+              with:
+                  configuration: '.github/changelog-configuration.json'
+                  outputFile: 'CHANGELOG.md'
+                  fromTag: ${{ github.event.inputs.fromTag }}
+                  toTag: ${{ steps.get_tags.outputs.to_tag }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Display Generated Changelog
+              run: |
+                  echo "生成的 CHANGELOG 内容:"
+                  cat CHANGELOG.md
+
+            - name: Upload Changelog
+              uses: actions/upload-artifact@v4
+              with:
+                  name: CHANGELOG
+                  path: CHANGELOG.md
+                  if-no-files-found: error

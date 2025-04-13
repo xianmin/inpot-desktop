@@ -56,8 +56,64 @@
         {
             "pattern": "^chore: (.*)",
             "target": "- $1"
+        },
+        {
+            "pattern": "^添加(.*)",
+            "target": "- 添加$1"
+        },
+        {
+            "pattern": "^修复(.*)",
+            "target": "- 修复$1"
+        },
+        {
+            "pattern": "^更新(.*)",
+            "target": "- 更新$1"
+        },
+        {
+            "pattern": "^优化(.*)",
+            "target": "- 优化$1"
+        },
+        {
+            "pattern": "添加(.*)",
+            "target": "- 添加$1"
+        },
+        {
+            "pattern": "修复(.*)",
+            "target": "- 修复$1"
+        },
+        {
+            "pattern": "更新(.*)",
+            "target": "- 更新$1"
+        },
+        {
+            "pattern": "add(.*)",
+            "target": "- add$1"
+        },
+        {
+            "pattern": "fix(.*)",
+            "target": "- fix$1"
+        },
+        {
+            "pattern": "update(.*)",
+            "target": "- update$1"
         }
     ],
     "pr_template": "- ${{TITLE}} (#${{NUMBER}})",
-    "empty_template": "## 本版本没有显著更改"
+    "empty_template": "## 该版本包含了多项改进和修复\n\n未检测到标准格式的提交信息。请查看完整的Git历史获取详细更改。",
+    "ignore_labels": [],
+    "max_tags_to_fetch": 200,
+    "max_pull_requests": 200,
+    "max_back_track_time_days": 365,
+    "exclude_merge_branches": ["Owner/main"],
+    "tag_resolver": {
+        "method": "semver",
+        "filter": {
+            "pattern": ".+-RC\\d*$",
+            "flags": "non-semver"
+        }
+    },
+    "base_refs": ["master", "main"],
+    "compare_releases": {
+        "method": "tag"
+    }
 }
