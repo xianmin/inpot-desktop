@@ -306,8 +306,8 @@ export default function TargetArea(props) {
                         setIsLoading(false);
                     }
                 );
-            } catch (error) {
-                setError(error.toString());
+            } catch (err) {
+                setError(err.toString());
                 setIsLoading(false);
             }
         } else {
@@ -350,8 +350,8 @@ export default function TargetArea(props) {
                             setIsLoading(false);
                         }
                     );
-            } catch (error) {
-                setError(error.toString());
+            } catch (err) {
+                setError(err.toString());
                 setIsLoading(false);
             }
         }

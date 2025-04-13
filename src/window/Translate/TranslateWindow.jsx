@@ -62,10 +62,10 @@ const TranslateServiceItem = memo(
         <div
             ref={dragProvided.innerRef}
             {...dragProvided.draggableProps}
+            {...dragProvided.dragHandleProps}
         >
             <Suspense fallback={<div>Loading...</div>}>
                 <TargetArea
-                    {...dragProvided.dragHandleProps}
                     index={index}
                     name={serviceInstanceKey}
                     translateServiceInstanceList={translateServiceInstanceList}
@@ -237,7 +237,7 @@ export default function TranslateWindow({
             <LanguageSelector />
 
             {/* 主内容区域 */}
-            <div className={`h-[calc(100vh-${hideLanguage ? '35' : '70'}px)]`}>
+            <div className={`h-[calc(100vh-35px)]`}>
                 <div className='h-full overflow-hidden'>
                     <div className='flex flex-row gap-2 h-full'>
                         {/* 源文本区域 */}

@@ -133,7 +133,7 @@ export default function InputSourceArea(props) {
                 </CardBody>
 
                 {/* 卡片底部：工具栏 */}
-                <CardFooter className='bg-content1 rounded-none rounded-b-[10px]'>
+                <CardFooter className='p-0 bg-content1 rounded-none rounded-b-[10px]'>
                     <Toolbar
                         sourceText={sourceText}
                         detectLanguage={detectLanguage}
