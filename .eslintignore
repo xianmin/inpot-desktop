@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.vscode/
+public/
+patches/
+updater/
+*.config.js
+*.config.cjs
+vite.config.js
+postcss.config.js
+tailwind.config.cjs
+.github/
+src-tauri/
+.scripts/
+*.d.ts
