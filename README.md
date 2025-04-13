@@ -16,6 +16,8 @@
 <hr/>
 
 
+下载地址： https://github.com/xianmin/inpot-desktop/releases
+
 # 改动说明
 
 1. 独立的输入翻译窗口，输入框与翻译结果并排展示；
