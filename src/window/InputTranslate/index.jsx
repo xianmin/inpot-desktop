@@ -1,5 +1,5 @@
 import React from 'react';
-import TranslateWindow from '../../components/TranslateWindow';
+import TranslateWindow from '../Translate/TranslateWindow';
 import InputSourceArea, { inputSourceTextAtom, inputDetectLanguageAtom } from './components/InputSourceArea';
 
 /**

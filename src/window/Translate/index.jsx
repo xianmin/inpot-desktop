@@ -3,7 +3,7 @@ import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useEffect } from 'react';
 import { appWindow } from '@tauri-apps/api/window';
 
-import TranslateWindow from '../../components/TranslateWindow';
+import TranslateWindow from './TranslateWindow';
 import SourceArea from './components/SourceArea';
 import { sourceTextAtom, detectLanguageAtom } from './components/SourceArea';
 import { useConfig } from '../../hooks';
