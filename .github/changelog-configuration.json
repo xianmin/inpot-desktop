@@ -1,0 +1,63 @@
+{
+    "categories": [
+        {
+            "title": "### 新功能",
+            "labels": ["feature", "enhancement", "feat"]
+        },
+        {
+            "title": "### 问题修复",
+            "labels": ["fix", "bug"]
+        },
+        {
+            "title": "### 性能优化",
+            "labels": ["performance", "perf"]
+        },
+        {
+            "title": "### 文档更新",
+            "labels": ["documentation", "docs"]
+        },
+        {
+            "title": "### 其他更改",
+            "labels": []
+        }
+    ],
+    "sort": "ASC",
+    "template": "${{CHANGELOG}}\n\n<details>\n<summary>提交详情</summary>\n\n${{COMMITS}}\n</details>",
+    "commitFormat": "- {{subject}} ({{hash}})",
+    "transformers": [
+        {
+            "pattern": "^feat: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^fix: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^docs: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^perf: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^refactor: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^style: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^test: (.*)",
+            "target": "- $1"
+        },
+        {
+            "pattern": "^chore: (.*)",
+            "target": "- $1"
+        }
+    ],
+    "pr_template": "- ${{TITLE}} (#${{NUMBER}})",
+    "empty_template": "## 本版本没有显著更改"
+}
