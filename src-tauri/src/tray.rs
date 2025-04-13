@@ -96,6 +96,11 @@ pub fn update_tray(app_handle: tauri::AppHandle, mut language: String, mut copy_
     }
 }
 
+#[tauri::command]
+pub fn restart_app(app_handle: tauri::AppHandle) {
+    on_restart_click(&app_handle);
+}
+
 pub fn tray_event_handler<'a>(app: &'a AppHandle, event: SystemTrayEvent) {
     match event {
         SystemTrayEvent::LeftClick { .. } => on_tray_click(),

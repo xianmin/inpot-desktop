@@ -15,6 +15,9 @@ import { Input } from '@nextui-org/react';
 import { Card } from '@nextui-org/react';
 import { invoke } from '@tauri-apps/api';
 import { useTheme } from 'next-themes';
+import { relaunch } from '@tauri-apps/api/process';
+import { appConfigDir, join } from '@tauri-apps/api/path';
+import { removeFile, exists } from '@tauri-apps/api/fs';
 
 import { useConfig } from '../../../../hooks/useConfig';
 import { LanguageFlag } from '../../../../utils/language';
@@ -596,6 +599,119 @@ export default function General() {
                                 }}
                             />
                         )}
+                    </div>
+                </CardBody>
+            </Card>
+
+            <Card className='mt-[10px]'>
+                <CardBody>
+                    <div className='flex justify-center'>
+                        <Button
+                            color='danger'
+                            variant='bordered'
+                            onClick={() => {
+                                toast(
+                                    (toastObj) => (
+                                        <div className='flex flex-col'>
+                                            <span>{t('config.general.reset_confirm')}</span>
+                                            <div className='flex justify-between mt-2'>
+                                                <Button
+                                                    size='sm'
+                                                    variant='light'
+                                                    onClick={() => toast.dismiss(toastObj.id)}
+                                                >
+                                                    {t('config.general.cancel')}
+                                                </Button>
+                                                <Button
+                                                    size='sm'
+                                                    color='danger'
+                                                    onClick={async () => {
+                                                        try {
+                                                            // 获取配置文件路径
+                                                            const appConfigDirPath = await appConfigDir();
+                                                            const configPath = await join(
+                                                                appConfigDirPath,
+                                                                'config.json'
+                                                            );
+
+                                                            // 检查文件是否存在
+                                                            const fileExists = await exists(configPath);
+                                                            if (fileExists) {
+                                                                // 删除配置文件
+                                                                await removeFile(configPath);
+
+                                                                toast.success(t('config.general.reset_success'), {
+                                                                    duration: 3000,
+                                                                    style: toastStyle,
+                                                                });
+
+                                                                // 等待提示显示后重启应用
+                                                                setTimeout(async () => {
+                                                                    try {
+                                                                        // 使用托盘菜单中相同的方式重启应用
+                                                                        // 该功能会解除快捷键绑定、关闭所有窗口，然后重启应用
+                                                                        await invoke('restart_app');
+                                                                    } catch (error) {
+                                                                        console.error('重启应用失败:', error);
+                                                                        // 备用方法
+                                                                        try {
+                                                                            await relaunch();
+                                                                        } catch (e) {
+                                                                            console.error('备用重启方法也失败:', e);
+                                                                            toast.error(
+                                                                                t('config.general.restart_error'),
+                                                                                {
+                                                                                    duration: 3000,
+                                                                                    style: toastStyle,
+                                                                                }
+                                                                            );
+                                                                        }
+                                                                    }
+                                                                }, 1500);
+                                                            } else {
+                                                                // 配置文件不存在，直接重启应用
+                                                                try {
+                                                                    // 使用托盘菜单中相同的方式重启应用
+                                                                    await invoke('restart_app');
+                                                                } catch (error) {
+                                                                    console.error('重启应用失败:', error);
+                                                                    // 备用方法
+                                                                    try {
+                                                                        await relaunch();
+                                                                    } catch (e) {
+                                                                        console.error('备用重启方法也失败:', e);
+                                                                        toast.error(t('config.general.restart_error'), {
+                                                                            duration: 3000,
+                                                                            style: toastStyle,
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('重置设置失败:', error);
+                                                            toast.error(t('config.general.reset_error'), {
+                                                                duration: 3000,
+                                                                style: toastStyle,
+                                                            });
+                                                        } finally {
+                                                            toast.dismiss(toastObj.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    {t('config.general.confirm')}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ),
+                                    {
+                                        duration: Infinity,
+                                        style: toastStyle,
+                                    }
+                                );
+                            }}
+                        >
+                            {t('config.general.reset_settings')}
+                        </Button>
                     </div>
                 </CardBody>
             </Card>

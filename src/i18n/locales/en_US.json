@@ -89,7 +89,14 @@
                     "disable": "Disable",
                     "ocr_recognize": "Text Recognition",
                     "ocr_translate": "Screenshot Translation"
-                }
+                },
+                "reset_settings": "Reset to Default Settings",
+                "reset_confirm": "Are you sure you want to reset ALL system settings to default? This will delete the configuration file and restart the application.",
+                "confirm": "Confirm",
+                "cancel": "Cancel",
+                "reset_success": "Settings reset, application will restart...",
+                "reset_error": "Failed to reset settings, please try to delete the config file manually",
+                "restart_error": "Failed to restart application, please close and reopen the application manually"
             },
             "translate": {
                 "label": "Translate",

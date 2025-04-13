@@ -89,7 +89,14 @@
                     "disable": "禁用",
                     "ocr_recognize": "文字识别",
                     "ocr_translate": "截图翻译"
-                }
+                },
+                "reset_settings": "恢复默认设置",
+                "reset_confirm": "确定要将所有系统设置恢复为默认值吗？这将删除配置文件并重启应用。",
+                "confirm": "确认",
+                "cancel": "取消",
+                "reset_success": "设置已重置，应用将重新启动...",
+                "reset_error": "重置设置失败，请尝试手动删除配置文件",
+                "restart_error": "应用重启失败，请手动关闭并重新启动应用"
             },
             "translate": {
                 "label": "翻译设置",

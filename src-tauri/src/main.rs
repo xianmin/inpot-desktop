@@ -197,6 +197,8 @@ fn main() {
             register_shortcut_by_frontend,
             // 托盘
             update_tray,
+            // 重启应用
+            restart_app,
             // 窗口
             updater_window,
             // 语言检测
