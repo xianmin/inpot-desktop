@@ -10,7 +10,7 @@ import { useConfig, useSyncAtom, useVoice, useToastStyle } from '../../../../hoo
 // 导入拆分出的组件和功能
 import TextEditor from './components/TextEditor';
 import Toolbar from './components/Toolbar';
-import { detectLanguage, cleanText, updateSourceText } from './handleTextOperations';
+import { detectLanguage as detectLanguageFunc, cleanText, updateSourceText } from './handleTextOperations';
 import useTTS from './useTTS';
 import useImageRecognizer from './useImageRecognizer';
 
@@ -107,7 +107,7 @@ export default function SourceArea(props) {
                 }
 
                 // 检测语言并同步
-                await detectLanguage(newText, setDetectLanguage);
+                await detectLanguageFunc(newText, setDetectLanguage);
                 syncSourceText();
             } catch (e) {
                 setSourceText(e.toString());
@@ -127,7 +127,7 @@ export default function SourceArea(props) {
             }
 
             // 检测语言并同步
-            await detectLanguage(newText, setDetectLanguage);
+            await detectLanguageFunc(newText, setDetectLanguage);
             syncSourceText();
         }
     };
@@ -140,7 +140,7 @@ export default function SourceArea(props) {
         if (event.key === 'Enter' && !event.shiftKey) {
             // Enter键开始翻译（不按Shift）
             event.preventDefault();
-            detectLanguage(sourceText, setDetectLanguage).then(() => {
+            detectLanguageFunc(sourceText, setDetectLanguage).then(() => {
                 syncSourceText();
             });
         }
@@ -188,7 +188,7 @@ export default function SourceArea(props) {
 
     // 包装语言检测功能
     const detect_language = async (text) => {
-        return detectLanguage(text, setDetectLanguage);
+        return detectLanguageFunc(text, setDetectLanguage);
     };
 
     return (

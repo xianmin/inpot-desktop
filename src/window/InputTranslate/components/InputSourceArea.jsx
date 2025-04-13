@@ -9,7 +9,10 @@ import { useConfig, useSyncAtom, useVoice, useToastStyle } from '../../../hooks'
 // 导入TextEditor和Toolbar组件
 import TextEditor from '../../Translate/components/SourceArea/components/TextEditor';
 import Toolbar from '../../Translate/components/SourceArea/components/Toolbar';
-import { detectLanguage, updateSourceText } from '../../Translate/components/SourceArea/handleTextOperations';
+import {
+    detectLanguage as detectLanguageFunc,
+    updateSourceText,
+} from '../../Translate/components/SourceArea/handleTextOperations';
 
 // 创建原子状态
 export const inputSourceTextAtom = atom('');
@@ -67,7 +70,7 @@ export default function InputSourceArea(props) {
         if (!text) return;
         try {
             if (!detectedLang) {
-                detectedLang = await detectLanguage(text, setDetectLanguage);
+                detectedLang = await detectLanguageFunc(text, setDetectLanguage);
             }
 
             // 使用系统语音API朗读文本
@@ -87,7 +90,7 @@ export default function InputSourceArea(props) {
         if (event.key === 'Enter' && !event.shiftKey) {
             // Enter键开始翻译（不按Shift）
             event.preventDefault();
-            detectLanguage(sourceText, setDetectLanguage).then(() => {
+            detectLanguageFunc(sourceText, setDetectLanguage).then(() => {
                 syncSourceText();
             });
         }
@@ -95,7 +98,7 @@ export default function InputSourceArea(props) {
 
     // 包装语言检测功能
     const detect_language = async (text) => {
-        return detectLanguage(text, setDetectLanguage);
+        return detectLanguageFunc(text, setDetectLanguage);
     };
 
     // 包装TTS功能
