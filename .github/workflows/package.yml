@@ -24,6 +24,8 @@ jobs:
                   git log --pretty=format:"%h - %s (%cr)" -10
                   echo "所有标签:"
                   git tag -l
+                  echo "查看 Changelog 配置文件:"
+                  cat .github/changelog-configuration.json
 
             - name: Get previous tag
               id: get_previous_tag
