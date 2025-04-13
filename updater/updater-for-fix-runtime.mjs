@@ -10,12 +10,12 @@ async function resolveUpdater() {
     let version = await getVersion(TOKEN);
     let changelog = await getChangeLog(TOKEN);
 
-    const windows_x86_64 = `https://dl.pot-app.com/https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_x64_fix_webview2_runtime-setup.nsis.zip`;
-    const windows_x86_64_sig = await getSignature(`https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_x64_fix_webview2_runtime-setup.nsis.zip.sig`);
-    const windows_i686 = `https://dl.pot-app.com/https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_x86_fix_webview2_runtime-setup.nsis.zip`;
-    const windows_i686_sig = await getSignature(`https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_x86_fix_webview2_runtime-setup.nsis.zip.sig`);
-    const windows_aarch64 = `https://dl.pot-app.com/https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_arm64_fix_webview2_runtime-setup.nsis.zip`;
-    const windows_aarch64_sig = await getSignature(`https://github.com/pot-app/pot-desktop/releases/download/${version}/pot_${version}_arm64_fix_webview2_runtime-setup.nsis.zip.sig`);
+    const windows_x86_64 = `https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_x64_fix_webview2_runtime-setup.nsis.zip`;
+    const windows_x86_64_sig = await getSignature(`https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_x64_fix_webview2_runtime-setup.nsis.zip.sig`);
+    const windows_i686 = `https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_x86_fix_webview2_runtime-setup.nsis.zip`;
+    const windows_i686_sig = await getSignature(`https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_x86_fix_webview2_runtime-setup.nsis.zip.sig`);
+    const windows_aarch64 = `https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_arm64_fix_webview2_runtime-setup.nsis.zip`;
+    const windows_aarch64_sig = await getSignature(`https://github.com/xianmin/inpot-desktop/releases/download/${version}/inPot_${version}_arm64_fix_webview2_runtime-setup.nsis.zip.sig`);
 
     let updateData = {
         name: version,
@@ -33,7 +33,7 @@ async function resolveUpdater() {
 }
 
 async function getVersion(token) {
-    const res = await fetch('https://api.github.com/repos/pot-app/pot-desktop/releases/latest', {
+    const res = await fetch('https://api.github.com/repos/xianmin/inpot-desktop/releases/latest', {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -49,7 +49,7 @@ async function getVersion(token) {
 }
 
 async function getChangeLog(token) {
-    const res = await fetch('https://api.github.com/repos/pot-app/pot-desktop/releases/latest', {
+    const res = await fetch('https://api.github.com/repos/xianmin/inpot-desktop/releases/latest', {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
